@@ -8,7 +8,8 @@ Implement different simulations/tests
 import numpy as np
 import pandas as pd
 import time
-import matplotlib.pyplot as plt
+
+#plt.switch_backend('agg')
 from queueengine import QUEUE
 
 
@@ -16,11 +17,12 @@ def simulate():
     '''
     run simulation for different arrival rates and plot curves
     '''
-    arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
-    Nuser=1000
+    #arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
+    arrival_rates = [ 0.1,  0.2,  0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    Nuser=20000
  #   user_prob=[0.5, 0.5]
     mu = 1
-    modes = ['FCFS', 'RAMDOM','LCFS','PLCFS','SJF','PSJF','SRPT']  ### PS is currently unavailable
+    modes = ['FCFS', 'RANDOM','LCFS','PLCFS','SJF','PSJF','SRPT']  ### PS, FB is currently unavailable
 
     for i in range(len(arrival_rates)):
         Mean = compare(Nuser, arrival_rates[i], mu, modes)
@@ -28,16 +30,16 @@ def simulate():
         with pd.HDFStore('results.h5') as store:
             store.put(str(arrival_rates[i]), Mean)
 
-    # plot curves
 
-    
+    # plot curves
+    import matplotlib.pyplot as plt
 
     # mean age
     fig, ax = plt.subplots(figsize=(15,8))
     with pd.HDFStore('results.h5') as store:
         for m in range(len(modes)):
             plt.plot(arrival_rates,[store[str(arrival_rates[i])]['age'][modes[m]] for i in range(len(arrival_rates))] )
-        
+
         plt.ylabel('mean age')
         plt.xlabel('arrival rates')
         plt.legend(modes)
@@ -48,7 +50,7 @@ def simulate():
     with pd.HDFStore('results.h5') as store:
         for m in range(len(modes)):
             plt.plot(arrival_rates,[store[str(arrival_rates[i])]['peak'][modes[m]] for i in range(len(arrival_rates))] )
-        
+
         plt.ylabel('peak age')
         plt.xlabel('arrival rates')
         plt.legend(modes)
@@ -59,11 +61,14 @@ def simulate():
     with pd.HDFStore('results.h5') as store:
         for m in range(len(modes)):
             plt.plot(arrival_rates,[store[str(arrival_rates[i])]['len'][modes[m]] for i in range(len(arrival_rates))] )
-        
+
         plt.ylabel('queue length')
         plt.xlabel('arrival rates')
         plt.legend(modes)
         plt.show()
+
+
+
     # ineffective depart ratio
     # fig, ax = plt.subplots(figsize=(15,8))
     # with pd.HDFStore('results.h5') as store:
@@ -77,11 +82,11 @@ def simulate():
 
 
 
-def compare(Nuser=1000,arrival_rate=0.35, mu = 1, modes = ['FCFS', 'RAMDOM','LCFS','PLCFS','SJF','PSJF','SRPT']):
+def compare(Nuser=1000, arrival_rate=0.35, mu = 1, modes = ['FCFS', 'RANDOM','LCFS','PLCFS','SJF','PSJF','SRPT']):
     '''
     compare different scheduling modes
     '''
-    modes = ['FCFS', 'RAMDOM','LCFS','PLCFS','SJF','PSJF','SRPT']
+    modes = ['FCFS', 'RANDOM','LCFS','PLCFS','SJF','PSJF','SRPT']
     data = np.zeros(len(modes), dtype = np.dtype([('age',float),
                                     ('peak',float),
                                     ('len',float)]))
@@ -94,6 +99,7 @@ def compare(Nuser=1000,arrival_rate=0.35, mu = 1, modes = ['FCFS', 'RAMDOM','LCF
     #print(queue.parameters)
     for i in range(len(modes)):
         queue.change_mode(modes[i])
+        print(modes[i])
 #        print(queue.Customer.dtype.names)
 #        print(queue.Customer)
         queue.queueing()
@@ -102,7 +108,7 @@ def compare(Nuser=1000,arrival_rate=0.35, mu = 1, modes = ['FCFS', 'RAMDOM','LCF
         Mean['len'][queue.mode] = queue.mean_queue_len()
         #Mean['ineff_dept'][queue.mode] = sum(queue.Customer['Age_Inef_Tag'] == True)/queue.Nuser
 
-    #print(Mean)
+    print(Mean)
     return Mean
 
 
