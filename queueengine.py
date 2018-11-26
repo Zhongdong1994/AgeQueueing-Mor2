@@ -7,6 +7,7 @@ Implement different scheduling policies
 @author: Liang Huang
 """
 import random
+from math import pow
 
 import numpy as np
 from collections import deque
@@ -49,7 +50,7 @@ class QUEUE(object):
                                     ('Block_Tag',bool),
                               #     ('Block_Depth',int),
                                     ('Queue_Number',int),
-                                    ('Residual_Time',float),
+                                    ('Response_Time',float),
                                     ('Age_Arvl',float),
                                     ('Age_Dept',float),
                                     ('Age_Peak',float)]))
@@ -61,6 +62,8 @@ class QUEUE(object):
             self.queues = []
             # suspended queue for preempted packets
             self.suspended_queues = []
+            ### the queue with all effetive departures
+            self.effe_queues=[]
 
 
         def reset(self):
@@ -80,7 +83,7 @@ class QUEUE(object):
                                     ('Block_Tag',bool),
                                 #    ('Block_Depth',int),
                                     ('Queue_Number',int),
-                                    ('Residual_Time',float),
+                                    ('Response_Time',float),
                                     ('Age_Arvl',float),
                                     ('Age_Dept',float),
                                     ('Age_Peak',float)]))
@@ -95,6 +98,7 @@ class QUEUE(object):
             self.queues = []
             # suspended queue for preempted packets, only for self.preemptive=True
             self.suspended_queues = []
+            self.effe_queues = []
 
 
 
@@ -144,19 +148,35 @@ class QUEUE(object):
             '''
             return len(self.queues) + self.suspended_queue_len()
 
-        def os(self):
+        def s_os(self,temp=1):  ### return the index of minimum original work load in the queue
             minimum=0
-            for x in range(len(self.queues)):
+            for x in range(temp):
+                if self.Customer['Work_Load'][self.suspended_queues[x]] < self.Customer['Work_Load'][self.suspended_queues[minimum]]:
+                    minimum=x
+            return minimum
+
+        def s_rs(self,temp=1):   ### return the index of minimum remaining work load in the queue   len(self.suspended_queues)
+            minimum = 0
+            for x in range(temp):
+                if self.Customer['Remain_Work_Load'][self.suspended_queues[x]] < self.Customer['Remain_Work_Load'][self.suspended_queues[minimum]]:
+                    minimum = x
+            return minimum
+
+        def os(self,temp=1):  ### return the index of minimum original work load in the queue
+            minimum=0
+            for x in range(temp):
                 if self.Customer['Work_Load'][self.queues[x]] < self.Customer['Work_Load'][self.queues[minimum]]:
                     minimum=x
             return minimum
 
-        def rs(self):
-            minimum = 0
-            for x in range(len(self.suspended_queues)):
+        def rs(self,temp=1):  ### return the index of minimum original work load in the queue
+            minimum=0
+            for x in range(temp):
                 if self.Customer['Remain_Work_Load'][self.queues[x]] < self.Customer['Remain_Work_Load'][self.queues[minimum]]:
-                    minimum = x
+                    minimum=x
             return minimum
+
+
 
         def queue_pop(self):
             #print("working")
@@ -164,20 +184,31 @@ class QUEUE(object):
             modes = ['FCFS', 'RANDOM','LCFS','PLCFS','SJF','PSJF','SRPT']
             '''
             # check preempted customer
-            if self.preemptive is True and self.suspended_queue_len() > 0:
+            if self.preemptive  and self.suspended_queue_len() > 0:
                 if self.mode == 'PLCFS':
                     temp=self.suspended_queues.pop()
                     #print(temp)
                     return temp
                 if self.mode == 'PSJF':
-                    # def takeOriginalJobSize(elem):
-                    #     return elem[4]
-                    # self.suspended_queues.sort(key=takeOriginalJobSize,reverse=True)
-                    # return self.suspended_queues.pop()
-                    #temp=self.os()
-                    return self.suspended_queues.pop(self.os())
+                    #print("working")
+                    if len(self.queues)==0:
+                        return self.suspended_queues.pop(self.s_os(len(self.suspended_queues)))
+                    elif self.Customer['Work_Load'][self.suspended_queues[self.s_os(len(self.suspended_queues))]] < \
+                            self.Customer['Work_Load'][self.queues[self.os(len(self.queues))]] :
+                        return self.suspended_queues.pop(self.s_os(len(self.suspended_queues)))
+                    else:
+                        return self.queues.pop(self.os(len(self.queues)))
+
+
                 if self.mode == 'SRPT':
-                    return self.suspended_queues.pop(self.rs())
+                    if len(self.queues)==0:
+                        return self.suspended_queues.pop(self.s_rs(len(self.suspended_queues)))
+                    elif self.Customer['Remain_Work_Load'][self.suspended_queues[self.s_rs(len(self.suspended_queues))]] < \
+                            self.Customer['Remain_Work_Load'][self.queues[self.rs(len(self.queues))]] :
+                        return self.suspended_queues.pop(self.s_rs(len(self.suspended_queues)))
+                    else:
+                        return self.queues.pop(self.rs(len(self.queues)))
+                    #return self.suspended_queues.pop(self.s_rs(len(self.suspended_queues)))
             if self.queue_len() > 0:
                 if self.mode == 'FCFS':
                     return self.queues.pop(0)
@@ -188,13 +219,15 @@ class QUEUE(object):
                     #print(temp)
                     return self.queues.pop(temp)
                 if self.mode == 'SJF':
-                    return self.queues.pop(self.os())
+                    return self.queues.pop(self.os(len(self.queues)))
                 if self.mode == 'PLCFS':
+                    #print(self.queues)
                     return self.queues.pop()
                 if self.mode == 'PSJF':
-                    return self.queues.pop(self.os())
+                    #print("working")
+                    return self.queues.pop(self.os(len(self.queues)))
                 if self.mode == 'SRPT':
-                    return self.queues.pop(self.rs())
+                    return self.queues.pop(self.rs(len(self.queues)))
             return -1
 
 
@@ -243,16 +276,21 @@ class QUEUE(object):
             update waiting time, depart interval, peak age, and age after depart
             '''
             # waiting time = depart time - arrival time - service time
-            self.Customer['Waiting_Intv'][i] = self.Customer['Dequeue_Time'][i] - self.Customer['Inqueue_Time'][i] - self.Customer['Serve_Intv'][i]
+            self.Customer['Response_Time'][i] = self.Customer['Dequeue_Time'][i] - self.Customer['Inqueue_Time'][i]
+            self.Customer['Waiting_Intv'][i] = self.Customer['Response_Time'][i] - self.Customer['Serve_Intv'][i]
             self.Customer['Dequeue_Intv'][i] = self.Customer['Dequeue_Time'][i] - self.Customer['Dequeue_Time'][self.last_depart]
-            if self.Customer['Dequeue_Time'][i] - self.Customer['Inqueue_Time'][i] > self.Customer['Age_Dept'][self.last_depart] + self.Customer['Dequeue_Intv'][i]:
-                # ineffective departure
-                # self.Customer['Age_Inef_Tag'][i] = True
+
+            # if self.Customer['Dequeue_Time'][i] - self.Customer['Inqueue_Time'][i] > self.Customer['Age_Dept'][self.last_depart] + self.Customer['Dequeue_Intv'][i]:
+            #     # ineffective departure
+            #     # self.Customer['Age_Inef_Tag'][i] = True
+            #     self.Customer['Age_Dept'][i] = self.Customer['Age_Dept'][self.last_depart] + self.Customer['Dequeue_Intv'][i]
+            if self.Customer['Inqueue_Time'][i] < self.Customer['Inqueue_Time'][self.last_depart]:
                 self.Customer['Age_Dept'][i] = self.Customer['Age_Dept'][self.last_depart] + self.Customer['Dequeue_Intv'][i]
             else:
                 # effective departure
                 self.Customer['Age_Dept'][i] = self.Customer['Dequeue_Time'][i] - self.Customer['Inqueue_Time'][i]
                 self.Customer['Age_Peak'][i] = self.Customer['Age_Dept'][self.last_depart] + self.Customer['Dequeue_Intv'][i]
+                self.effe_queues.append(i)
 
             self.last_depart = i
             self.i_serving = -1
@@ -278,21 +316,36 @@ class QUEUE(object):
             return True is preemption
             modes = ['PLCFS','PSJF','SRPT']
             '''
-            if self.mode in ['PLCFS']:
+            if self.mode == 'PLCFS':
                 # always preempt
                 return True
-
-            if self.mode in ['SRPT']:
+            elif self.mode ==  'SRPT':
                 # depends on the remaining workload
+                #print("working")
                 return self.Customer['Remain_Work_Load'][i_new] < self.Customer['Remain_Work_Load'][i_old]
-
-            if self.mode in ['PSJF']:
+            elif self.mode == 'PSJF':
                 # compare the expected age, current time is the arrival time of i_new
                 # the expected age of i_new is its work load
-                return self.Customer['Work_Load'][i_new] < self.Customer['Work_Load'][i_old]
+                temp=self.Customer['Work_Load'][i_new] < self.Customer['Work_Load'][i_old]
+                #print(temp)
+                return temp
+            else:
+                return False
 
-            # no preemption by default
-            return False
+            # if self.mode ==  'SRPT':
+            #     # depends on the remaining workload
+            #     #print("working")
+            #     return self.Customer['Remain_Work_Load'][i_new] < self.Customer['Remain_Work_Load'][i_old]
+            #
+            # if self.mode == 'PSJF':
+            #     # compare the expected age, current time is the arrival time of i_new
+            #     # the expected age of i_new is its work load
+            #     temp=self.Customer['Work_Load'][i_new] < self.Customer['Work_Load'][i_old]
+            #     #print(temp)
+            #     return temp
+            #
+            # # no preemption by default
+            # return False
 
         def preempt(self, i_old, i_new):
             '''
@@ -316,8 +369,14 @@ class QUEUE(object):
                 self.serve_between_time(self.Customer['Inqueue_Time'][idx_a-1], self.Customer['Inqueue_Time'][idx_a-1] + self.Customer['Arrival_Intv'][idx_a])
                 self.arrive(idx_a)
                 # if self.preemptive is True:
-                if self.preemptive and self.is_preempted(self.i_serving, idx_a) is True:
+                # if self.mode=='PSJF':
+                #      print(self.is_preempted(self.i_serving, idx_a))
+                if self.preemptive and self.is_preempted(self.i_serving, idx_a):
+                    # if self.mode=='PSJF':
+                    #     print("working")
                     self.preempt(self.i_serving, idx_a)
+                    # if self.mode=='PLCFS':
+                    #     print("working")
                 else:
                     # no preemption, enqueue the customer
                     self.queue_append(idx_a)
@@ -340,14 +399,34 @@ class QUEUE(object):
             the average age can be calculated from arriving age due to PASTA
             return: mean age
             '''
-            return sum(self.Customer['Age_Arvl'][int(self.Nuser/2):] / (self.Nuser - int(self.Nuser/2)))
+            total_age = 0
+            for x in range(len(self.effe_queues)):
+                if x == 0:
+                    total_age += self.Customer['Age_Peak'][self.effe_queues[x]] * self.Customer['Dequeue_Time'][
+                        self.effe_queues[x]] - 0.5 * pow(self.Customer['Dequeue_Time'][self.effe_queues[x]], 2)
+                else:
+                    temp = self.Customer['Dequeue_Time'][self.effe_queues[x]] - self.Customer['Dequeue_Time'][
+                        self.effe_queues[x - 1]]
+                    total_age += self.Customer['Age_Peak'][self.effe_queues[x]] * temp - 0.5 * pow(temp, 2)
+            return total_age / self.Customer['Dequeue_Time'][self.Nuser-1]
 
         def mean_peak_age(self):
             '''
             the average peak age
             return: mean peak_age
             '''
-            return sum(self.Customer['Age_Peak'][int(self.Nuser/2):] / sum(self.Customer['Age_Peak'][int(self.Nuser/2):]>0))
+            total_page=0
+            for x in self.effe_queues:
+                total_page+=self.Customer['Age_Peak'][x]
+            return total_page/len(self.effe_queues)
+
+        def mean_response_time(self):
+            total_response_time=0
+            for x in range(len(self.Customer)):
+                total_response_time+=self.Customer['Response_Time'][x]
+            return total_response_time/len(self.Customer)
+
+
 
         def mean_queue_len(self):
             '''
