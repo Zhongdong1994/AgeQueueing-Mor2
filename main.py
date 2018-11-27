@@ -19,7 +19,7 @@ def simulate():
     '''
     # arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-    Nuser = 1000
+    Nuser = 10000
     #   user_prob=[0.5, 0.5]
     mu = 1
     rounds = 5
