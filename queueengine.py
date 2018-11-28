@@ -178,6 +178,17 @@ class QUEUE(object):
                 minimum = x
         return minimum
 
+    def las(self,temp=1):
+        if temp <=1:
+            return -1
+        else:
+            minimum = 0
+            for x in range(temp):
+                if self.Customer['Serve_Intv'][self.queues[x]] < self.Customer['Serve_Intv'][
+                    self.queues[minimum]]:
+                    minimum = x
+            return minimum
+
     def queue_pop(self):
         ''' pop one customer for service
         modes = ['FCFS', 'RANDOM','LCFS','PLCFS','SJF','PSJF','SRPT']
@@ -253,6 +264,17 @@ class QUEUE(object):
         ''' serve the i-th customer
         return the time when the service ends/stops
         '''
+
+        ### the service time difference between current serving job and the job in the queue who has the least service time
+        temp_las=self.Customer['Serve_Intv'][i]-self.Customer['Serve_Intv'][self.las(len(self.queues))]
+        if self.mode=='FB':
+            if (t_end==-1 or temp_las>0 ) and temp_las< t_end - t_begin:
+
+
+
+
+
+
         if self.mode == 'PS':
             if t_end == -1 or self.Customer['Remain_Work_Load'][i] < (t_end - t_begin) / (len(self.queues) + 1):
                 self.Customer['Serve_Intv'][i] += self.Customer['Remain_Work_Load'][i] * (len(self.queues) + 1)
@@ -402,6 +424,12 @@ class QUEUE(object):
                     self.Customer['Remain_Work_Load'][idx_a]:
                 self.queues.append(self.i_serving)
                 self.i_serving = idx_a
+            elif self.mode=='FB':
+                if self.i_serving>=0:
+                    self.queues.append(self.i_serving)
+                    self.i_serving = idx_a
+                else:
+                    self.i_serving = idx_a
             else:
                 # no preemption, enqueue the customer
                 self.queue_append(idx_a)
