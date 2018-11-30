@@ -66,6 +66,7 @@ class QUEUE(object):
         self.suspended_queues = []
         ### the queue with all effetive departures
         self.effe_queues = []
+        self.conqueue=[]
 
     def reset(self):
         self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT']
@@ -100,6 +101,7 @@ class QUEUE(object):
         # suspended queue for preempted packets, only for self.preemptive=True
         self.suspended_queues = []
         self.effe_queues = []
+        self.conqueue = []
 
     def generate_arvl(self):
         '''
@@ -178,16 +180,7 @@ class QUEUE(object):
                 minimum = x
         return minimum
 
-    def las(self,temp=1):
-        if temp <=1:
-            return -1
-        else:
-            minimum = 0
-            for x in range(temp):
-                if self.Customer['Serve_Intv'][self.queues[x]] < self.Customer['Serve_Intv'][
-                    self.queues[minimum]]:
-                    minimum = x
-            return minimum
+
 
     def queue_pop(self):
         ''' pop one customer for service
@@ -260,15 +253,31 @@ class QUEUE(object):
         else:
             print('Improper queueing mode in suspended_queue_append!', self.mode)
 
+    def minAservice(self,temp=[]): # return the  one job in temp[] whose attained service time is least
+            minimum = temp[0]
+            for x in temp:
+                if self.Customer['Serve_Intv'][x] < self.Customer['Serve_Intv'][minimum]:
+                    minimum = x
+            return minimum
+
+    def minRservice(self,temp=[]): # return the one job in temp[] whose remaining service time is least
+            minimum = temp[0]
+            for x in temp:
+                if self.Customer['Remain_Work_Load'][x] < self.Customer['Remain_Work_Load'][minimum]:
+                    minimum = x
+            return minimum
+
     def serve(self, i, t_begin, t_end):
         ''' serve the i-th customer
         return the time when the service ends/stops
         '''
-
-        ### the service time difference between current serving job and the job in the queue who has the least service time
-        temp_las=self.Customer['Serve_Intv'][i]-self.Customer['Serve_Intv'][self.las(len(self.queues))]
+        idx_queue_minSer=self.minAservice(self.queues)
+        idx_conqueue_minRem=self.minRservice(self.conqueue)
         if self.mode=='FB':
-            if (t_end==-1 or temp_las>0 ) and temp_las< t_end - t_begin:
+            T2=len(self.conqueue)*(self.Customer['Serve_Intv'][idx_queue_minSer]-self.Customer['Serve_Intv'][0])
+            T1=len(self.conqueue)*(self.Customer['Remain_Work_Load'][idx_conqueue_minRem])
+            if T2==0: # implies queue[]==conqueue[]
+
 
 
 
@@ -277,21 +286,21 @@ class QUEUE(object):
 
         if self.mode == 'PS':
             if t_end == -1 or self.Customer['Remain_Work_Load'][i] < (t_end - t_begin) / (len(self.queues) + 1):
-                self.Customer['Serve_Intv'][i] += self.Customer['Remain_Work_Load'][i] * (len(self.queues) + 1)
+                self.Customer['Serve_Intv'][i] += self.Customer['Remain_Work_Load'][i]
                 self.Customer['Dequeue_Time'][i] = t_begin + self.Customer['Remain_Work_Load'][i] * (
                             len(self.queues) + 1)
                 for j in self.queues:
-                    self.Customer['Serve_Intv'][j] += self.Customer['Remain_Work_Load'][i] * (len(self.queues) + 1)
+                    self.Customer['Serve_Intv'][j] += self.Customer['Remain_Work_Load'][i]
                     self.Customer['Remain_Work_Load'][j] -= self.Customer['Remain_Work_Load'][i]
                 self.Customer['Remain_Work_Load'][i] = 0
                 return self.depart(i)
             else:
                 # self.Customer['Serve_Intv'][i] += t_end - t_begin
                 # self.Customer['Remain_Work_Load'][i] -= t_end - t_begin
-                self.Customer['Serve_Intv'][i] += (t_end - t_begin)
+                self.Customer['Serve_Intv'][i] += (t_end - t_begin)/ (len(self.queues) + 1)
                 self.Customer['Remain_Work_Load'][i] -= (t_end - t_begin) / (len(self.queues) + 1)
                 for j in self.queues:
-                    self.Customer['Serve_Intv'][j] += (t_end - t_begin)
+                    self.Customer['Serve_Intv'][j] += (t_end - t_begin)/ (len(self.queues) + 1)
                     self.Customer['Remain_Work_Load'][j] -= (t_end - t_begin) / (len(self.queues) + 1)
                 return t_end
 
@@ -407,6 +416,9 @@ class QUEUE(object):
 
         while idx_a < self.Nuser - 1:
             idx_a += 1
+            if self.mode=='FB':
+                self.conqueue=[]
+                self.conqueue.append(idx_a-1)
             self.serve_between_time(self.Customer['Inqueue_Time'][idx_a - 1],
                                     self.Customer['Inqueue_Time'][idx_a - 1] + self.Customer['Arrival_Intv'][idx_a])
             self.arrive(idx_a)

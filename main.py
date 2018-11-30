@@ -19,11 +19,11 @@ def simulate():
     '''
     # arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-    Nuser = 10000
+    Nuser = 20000
     #   user_prob=[0.5, 0.5]
     mu = 1
-    rounds = 5
-    modes = ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT']  ### PS, FB is currently unavailable
+    rounds = 3
+    modes = ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT']  ###  FB is currently unavailable
 
     # for i in range(len(arrival_rates)):
     #     Mean = compare(Nuser, arrival_rates[i], mu, modes)
