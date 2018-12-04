@@ -428,6 +428,7 @@ class QUEUE(object):
             # if self.preemptive is True:
             # if self.mode=='PSJF':
             #      print(self.is_preempted(self.i_serving, idx_a))
+            #
 
             if self.preemptive and self.is_preempted(self.i_serving, idx_a):
                 self.preempt(self.i_serving, idx_a)
