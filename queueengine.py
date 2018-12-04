@@ -37,6 +37,7 @@ class QUEUE(object):
         self.mode = mode
         self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT']
         self.i_depart = np.zeros(self.num_user_type, dtype=int)
+        self.largest_inqueue_time=0  ### largest inqueue time among all departed jobs
         # self.i_depart_effective = np.zeros(self.num_user_type, dtype=int)
         self.last_depart = -1  # by default no customer departs
         self.i_serving = -1  # by default no customer under serving
@@ -74,6 +75,7 @@ class QUEUE(object):
         # self.i_depart_effective = np.zeros(self.num_user_type, dtype=int)
         self.last_depart = -1  # by default no customer departs
         self.i_serving = -1  # by default no customer under serving
+        self.largest_inqueue_time = 0
         Customer = np.zeros(self.Nuser, dtype=np.dtype([('Inqueue_Time', float),
                                                         ('Arrival_Intv', float),
                                                         ('Waiting_Intv', float),
@@ -112,9 +114,9 @@ class QUEUE(object):
         # print(self.Customer['Priority'])
 
 
-        #self.Customer['Work_Load'] = np.random.exponential(1 / self.mu, size=self.Nuser)
+        self.Customer['Work_Load'] = np.random.exponential(1 / self.mu, size=self.Nuser)
         #self.Customer['Work_Load'] = 0.29752*np.random.weibull(0.39837, size=self.Nuser)
-        self.Customer['Work_Load'] =  np.random.uniform(0,2, size=self.Nuser)
+        #self.Customer['Work_Load'] =  np.random.uniform(0,2, size=self.Nuser)
 
 
         # print(self.Customer['Work_Load'])
@@ -127,6 +129,7 @@ class QUEUE(object):
         if i is 0:
             # enqueue the first customer; other parameters are as default values 0
             self.Customer['Inqueue_Time'][i] = self.Customer['Arrival_Intv'][i]
+            self.largest_inqueue_time=self.Customer['Inqueue_Time'][i]
             self.Customer['Age_Arvl'][i] = self.Customer['Inqueue_Time'][i]
             # for future finite queue
             # self.Customer['Block_Depth'][i] = 1
@@ -154,7 +157,7 @@ class QUEUE(object):
         '''
         return len(self.queues) + self.suspended_queue_len()
 
-    def s_os(self, temp=1):  ### return the index of minimum original work load in the queue
+    def s_os(self, temp=1):  ### return the index of minimum original work load in the suspended queue
         minimum = 0
         for x in range(temp):
             if self.Customer['Work_Load'][self.suspended_queues[x]] < self.Customer['Work_Load'][
@@ -163,7 +166,7 @@ class QUEUE(object):
         return minimum
 
     def s_rs(self,
-             temp=1):  ### return the index of minimum remaining work load in the queue   len(self.suspended_queues)
+             temp=1):  ### return the index of minimum remaining work load in the suspended queue
         minimum = 0
         for x in range(temp):
             if self.Customer['Remain_Work_Load'][self.suspended_queues[x]] < self.Customer['Remain_Work_Load'][
@@ -178,7 +181,7 @@ class QUEUE(object):
                 minimum = x
         return minimum
 
-    def rs(self, temp=1):  ### return the index of minimum original work load in the queue
+    def rs(self, temp=1):  ### return the index of minimum remaining work load in the queue
         minimum = 0
         for x in range(temp):
             if self.Customer['Remain_Work_Load'][self.queues[x]] < self.Customer['Remain_Work_Load'][
@@ -341,11 +344,12 @@ class QUEUE(object):
         #     # ineffective departure
         #     # self.Customer['Age_Inef_Tag'][i] = True
         #     self.Customer['Age_Dept'][i] = self.Customer['Age_Dept'][self.last_depart] + self.Customer['Dequeue_Intv'][i]
-        if self.Customer['Inqueue_Time'][i] < self.Customer['Inqueue_Time'][self.last_depart]:
+        if self.Customer['Inqueue_Time'][i] < self.largest_inqueue_time:
             self.Customer['Age_Dept'][i] = self.Customer['Age_Dept'][self.last_depart] + self.Customer['Dequeue_Intv'][
                 i]
         else:
             # effective departure
+            self.largest_inqueue_time=self.Customer['Inqueue_Time'][i]
             self.Customer['Age_Dept'][i] = self.Customer['Dequeue_Time'][i] - self.Customer['Inqueue_Time'][i]
             self.Customer['Age_Peak'][i] = self.Customer['Age_Dept'][self.last_depart] + self.Customer['Dequeue_Intv'][
                 i]

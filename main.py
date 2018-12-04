@@ -52,7 +52,7 @@ def simulate():
             plt.plot(arrival_rates,
                      [store[str(arrival_rates[i])]['response'][modes[m]] for i in range(len(arrival_rates))])
 
-        plt.ylabel('mean response')
+        plt.ylabel('average response')
         plt.xlabel('arrival rates')
         plt.legend(modes)
         ax.set_ylim(
@@ -66,7 +66,7 @@ def simulate():
         for m in range(len(modes)):
             plt.plot(arrival_rates, [store[str(arrival_rates[i])]['age'][modes[m]] for i in range(len(arrival_rates))])
 
-        plt.ylabel('mean age')
+        plt.ylabel('average age')
         plt.xlabel('arrival rates')
         plt.legend(modes)
         ax.set_ylim([0, max([store[str(arrival_rates[i])]['age'][modes[1]] for i in range(len(arrival_rates))]) * 1.1])
@@ -78,7 +78,7 @@ def simulate():
         for m in range(len(modes)):
             plt.plot(arrival_rates, [store[str(arrival_rates[i])]['peak'][modes[m]] for i in range(len(arrival_rates))])
 
-        plt.ylabel('peak age')
+        plt.ylabel('average peak age')
         plt.xlabel('arrival rates')
         plt.legend(modes)
         ax.set_ylim([0, max([store[str(arrival_rates[i])]['peak'][modes[1]] for i in range(len(arrival_rates))]) * 1.1])
