@@ -110,7 +110,13 @@ class QUEUE(object):
         self.Customer['Arrival_Intv'] = np.random.exponential(1 / self.arrival_rate, size=self.Nuser)
         # self.Customer['Priority'] = np.random.choice(self.num_user_type, size=self.Nuser, p=self.user_prob)
         # print(self.Customer['Priority'])
-        self.Customer['Work_Load'] = np.random.exponential(1 / self.mu, size=self.Nuser)
+
+
+        #self.Customer['Work_Load'] = np.random.exponential(1 / self.mu, size=self.Nuser)
+        #self.Customer['Work_Load'] = 0.29752*np.random.weibull(0.39837, size=self.Nuser)
+        self.Customer['Work_Load'] =  np.random.uniform(0,2, size=self.Nuser)
+
+
         # print(self.Customer['Work_Load'])
         # print((1/np.array(self.mu)))
         self.Customer['Remain_Work_Load'] = np.copy(self.Customer['Work_Load'])
@@ -258,6 +264,7 @@ class QUEUE(object):
             for x in temp:
                 if self.Customer['Serve_Intv'][x] < self.Customer['Serve_Intv'][minimum]:
                     minimum = x
+
             return minimum
 
     def minRservice(self,temp=[]): # return the one job in temp[] whose remaining service time is least
@@ -271,12 +278,12 @@ class QUEUE(object):
         ''' serve the i-th customer
         return the time when the service ends/stops
         '''
-        idx_queue_minSer=self.minAservice(self.queues)
-        idx_conqueue_minRem=self.minRservice(self.conqueue)
-        if self.mode=='FB':
-            T2=len(self.conqueue)*(self.Customer['Serve_Intv'][idx_queue_minSer]-self.Customer['Serve_Intv'][0])
-            T1=len(self.conqueue)*(self.Customer['Remain_Work_Load'][idx_conqueue_minRem])
-            if T2==0: # implies queue[]==conqueue[]
+        # idx_queue_minSer=self.minAservice(self.queues)
+        # idx_conqueue_minRem=self.minRservice(self.conqueue)
+        # if self.mode=='FB':
+        #     T2=len(self.conqueue)*(self.Customer['Serve_Intv'][idx_queue_minSer]-self.Customer['Serve_Intv'][0])
+        #     T1=len(self.conqueue)*(self.Customer['Remain_Work_Load'][idx_conqueue_minRem])
+        #     if T2==0: # implies queue[]==conqueue[]
 
 
 
@@ -382,18 +389,7 @@ class QUEUE(object):
         else:
             return False
 
-        # if self.mode ==  'SRPT':
-        #     # depends on the remaining workload
-        #     #print("working")
-        #     return self.Customer['Remain_Work_Load'][i_new] < self.Customer['Remain_Work_Load'][i_old]
-        #
-        # if self.mode == 'PSJF':
-        #     # compare the expected age, current time is the arrival time of i_new
-        #     # the expected age of i_new is its work load
-        #     temp=self.Customer['Work_Load'][i_new] < self.Customer['Work_Load'][i_old]
-        #     #print(temp)
-        #     return temp
-        #
+
         # # no preemption by default
         # return False
 
@@ -416,22 +412,21 @@ class QUEUE(object):
 
         while idx_a < self.Nuser - 1:
             idx_a += 1
-            if self.mode=='FB':
-                self.conqueue=[]
-                self.conqueue.append(idx_a-1)
+
+            # if self.mode=='FB':  working on...
+            #     self.conqueue=[]
+            #     self.conqueue.append(idx_a-1)
+
             self.serve_between_time(self.Customer['Inqueue_Time'][idx_a - 1],
                                     self.Customer['Inqueue_Time'][idx_a - 1] + self.Customer['Arrival_Intv'][idx_a])
             self.arrive(idx_a)
+
             # if self.preemptive is True:
             # if self.mode=='PSJF':
             #      print(self.is_preempted(self.i_serving, idx_a))
 
             if self.preemptive and self.is_preempted(self.i_serving, idx_a):
-                # if self.mode=='PSJF':
-                #     print("working")
                 self.preempt(self.i_serving, idx_a)
-                # if self.mode=='PLCFS':
-                #     print("working")
             elif self.mode == 'PS' and self.Customer['Remain_Work_Load'][self.i_serving] > \
                     self.Customer['Remain_Work_Load'][idx_a]:
                 self.queues.append(self.i_serving)
@@ -500,6 +495,3 @@ class QUEUE(object):
     def parameters(self):
         return 'Nuser=' + str(self.Nuser) + ', arrival_rate=' + str(self.arrival_rate) + ', mu =' + str(
             self.mu) + ', mode =' + self.mode
-
-
-

@@ -22,7 +22,7 @@ def simulate():
     Nuser = 20000
     #   user_prob=[0.5, 0.5]
     mu = 1
-    rounds = 3
+    rounds =50
     modes = ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT']  ###  FB is currently unavailable
 
     # for i in range(len(arrival_rates)):
@@ -53,10 +53,10 @@ def simulate():
                      [store[str(arrival_rates[i])]['response'][modes[m]] for i in range(len(arrival_rates))])
 
         plt.ylabel('mean response')
-        plt.xlabel('arrival rates (fixed sevice rate =1)')
+        plt.xlabel('arrival rates')
         plt.legend(modes)
         ax.set_ylim(
-            [0, max([store[str(arrival_rates[i])]['response'][modes[1]] for i in range(len(arrival_rates))]) * 1.1])
+            [0, 9])
         plt.show()
 
     # mean age
@@ -67,7 +67,7 @@ def simulate():
             plt.plot(arrival_rates, [store[str(arrival_rates[i])]['age'][modes[m]] for i in range(len(arrival_rates))])
 
         plt.ylabel('mean age')
-        plt.xlabel('arrival rates (fixed sevice rate =1)')
+        plt.xlabel('arrival rates')
         plt.legend(modes)
         ax.set_ylim([0, max([store[str(arrival_rates[i])]['age'][modes[1]] for i in range(len(arrival_rates))]) * 1.1])
         plt.show()
@@ -79,7 +79,7 @@ def simulate():
             plt.plot(arrival_rates, [store[str(arrival_rates[i])]['peak'][modes[m]] for i in range(len(arrival_rates))])
 
         plt.ylabel('peak age')
-        plt.xlabel('arrival rates (fixed sevice rate =1)')
+        plt.xlabel('arrival rates')
         plt.legend(modes)
         ax.set_ylim([0, max([store[str(arrival_rates[i])]['peak'][modes[1]] for i in range(len(arrival_rates))]) * 1.1])
         plt.show()
