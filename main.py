@@ -18,12 +18,12 @@ def simulate():
     run simulation for different arrival rates and plot curves
     '''
     # arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
-    arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-    Nuser = 20000
+    arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95]
+    Nuser = 100000
     #   user_prob=[0.5, 0.5]
     mu = 1
-    rounds =50
-    modes = ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT']  ###  FB is currently unavailable
+    rounds =1
+    modes = ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS']  ###  FB is currently unavailable
 
     # for i in range(len(arrival_rates)):
     #     Mean = compare(Nuser, arrival_rates[i], mu, modes)
@@ -108,11 +108,11 @@ def simulate():
 
 
 def compare(Nuser=1000, arrival_rate=0.35, mu=1,
-            modes=['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT']):
+            modes=['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS']):
     '''
     compare different scheduling modes
     '''
-    modes = ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT']
+    modes = ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS']
     data = np.zeros(len(modes), dtype=np.dtype([('age', float),
                                                 ('peak', float),
                                                 ('len', float),

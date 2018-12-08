@@ -35,7 +35,7 @@ class QUEUE(object):
         self.num_user_type = 1
         self.mu = mu
         self.mode = mode
-        self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT']
+        self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT','PABS']
         self.i_depart = np.zeros(self.num_user_type, dtype=int)
         self.largest_inqueue_time=0  ### largest inqueue time among all departed jobs
         # self.i_depart_effective = np.zeros(self.num_user_type, dtype=int)
@@ -70,7 +70,7 @@ class QUEUE(object):
         self.conqueue=[]
 
     def reset(self):
-        self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT']
+        self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT','PABS']
         self.i_depart = np.zeros(self.num_user_type, dtype=int)
         # self.i_depart_effective = np.zeros(self.num_user_type, dtype=int)
         self.last_depart = -1  # by default no customer departs
@@ -189,11 +189,19 @@ class QUEUE(object):
                 minimum = x
         return minimum
 
+    def ageDropLargest(self,temp=1,currentTime=0):
+        minimum = 0
+        for x in range(temp):
+            if currentTime+self.Customer['Remain_Work_Load'][self.queues[x]]-self.Customer['Inqueue_Time'][self.queues[x]] < \
+                    currentTime+self.Customer['Remain_Work_Load'][self.queues[minimum]]-self.Customer['Inqueue_Time'][self.queues[minimum]]:
+                minimum = x
+        return minimum
 
 
-    def queue_pop(self):
+
+    def queue_pop(self,currentTime=0):
         ''' pop one customer for service
-        modes = ['FCFS', 'RANDOM','LCFS','PLCFS','SJF','PSJF','SRPT']
+        modes = ['FCFS', 'RANDOM','LCFS','PLCFS','SJF','PSJF','SRPT','ABS','PABS']
         '''
         # check preempted customer
         if self.preemptive and self.suspended_queue_len() > 0:
@@ -241,14 +249,16 @@ class QUEUE(object):
                 return self.queues.pop(self.rs(len(self.queues)))
             if self.mode == 'PS':
                 return self.queues.pop(self.rs(len(self.queues)))
+            if self.mode=='ABS' or self.mode=='PABS':
+                return self.queues.pop(self.ageDropLargest(len(self.queues), currentTime))
         return -1
 
     def queue_append(self, i):
         '''
         append one customer. Left ones goes out first, and right ones goes last
-        modes = ['FCFS', 'RANDOM','LCFS','PS','PLCFS','FB','SJF','PSJF','SRPT']
+        modes = ['FCFS', 'RANDOM','LCFS','PS','PLCFS','FB','SJF','PSJF','SRPT','ABS]
         '''
-        if self.mode in ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT']:
+        if self.mode in ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS']:
             self.queues.append(i)
         else:
             print('Improper queueing mode in queue_append!', self.mode)
@@ -257,7 +267,7 @@ class QUEUE(object):
         '''
         append one preempted customer
         '''
-        if self.mode in ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT']:
+        if self.mode in ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS']:
             self.suspended_queues.append(i)
         else:
             print('Improper queueing mode in suspended_queue_append!', self.mode)
@@ -287,11 +297,6 @@ class QUEUE(object):
         #     T2=len(self.conqueue)*(self.Customer['Serve_Intv'][idx_queue_minSer]-self.Customer['Serve_Intv'][0])
         #     T1=len(self.conqueue)*(self.Customer['Remain_Work_Load'][idx_conqueue_minRem])
         #     if T2==0: # implies queue[]==conqueue[]
-
-
-
-
-
 
 
         if self.mode == 'PS':
@@ -368,7 +373,7 @@ class QUEUE(object):
         # when there is additional time to serve other customers
         while (t < t_end or t_end == -1) and self.queue_len() > 0:
             # next customer
-            self.i_serving = self.queue_pop()  # here we get the index of next customer
+            self.i_serving = self.queue_pop(t)  # here we get the index of next customer
             # serve the customer
             t = self.serve(self.i_serving, t, t_end)
 
@@ -390,6 +395,10 @@ class QUEUE(object):
             temp = self.Customer['Work_Load'][i_new] < self.Customer['Work_Load'][i_old]
             # print(temp)
             return temp
+        elif self.mode=='PABS':
+             check= self.Customer['Remain_Work_Load'][i_new] - self.Customer['Inqueue_Time'][i_new]< \
+                    self.Customer['Remain_Work_Load'][i_old] - self.Customer['Inqueue_Time'][i_old]
+             return check
         else:
             return False
 
@@ -401,10 +410,15 @@ class QUEUE(object):
         '''
         i_old is preempted by i_new
         '''
-        # suspend i_old
-        self.suspended_queue_append(i_old)
-        # set the new customer as serving
-        self.i_serving = i_new
+        if self.mode=='PABS':
+            self.queue_append(i_old)
+            self.i_serving=i_new
+        else:
+            # suspend i_old
+            self.suspended_queue_append(i_old)
+            # set the new customer as serving
+            self.i_serving = i_new
+
 
     def queueing(self):
         self.arrive(0)
@@ -425,23 +439,18 @@ class QUEUE(object):
                                     self.Customer['Inqueue_Time'][idx_a - 1] + self.Customer['Arrival_Intv'][idx_a])
             self.arrive(idx_a)
 
-            # if self.preemptive is True:
-            # if self.mode=='PSJF':
-            #      print(self.is_preempted(self.i_serving, idx_a))
-            #
-
             if self.preemptive and self.is_preempted(self.i_serving, idx_a):
                 self.preempt(self.i_serving, idx_a)
             elif self.mode == 'PS' and self.Customer['Remain_Work_Load'][self.i_serving] > \
                     self.Customer['Remain_Work_Load'][idx_a]:
                 self.queues.append(self.i_serving)
                 self.i_serving = idx_a
-            elif self.mode=='FB':
-                if self.i_serving>=0:
-                    self.queues.append(self.i_serving)
-                    self.i_serving = idx_a
-                else:
-                    self.i_serving = idx_a
+            # elif self.mode=='FB':  # this part is useful, do not delete
+            #     if self.i_serving>=0:
+            #         self.queues.append(self.i_serving)
+            #         self.i_serving = idx_a
+            #     else:
+            #         self.i_serving = idx_a
             else:
                 # no preemption, enqueue the customer
                 self.queue_append(idx_a)
