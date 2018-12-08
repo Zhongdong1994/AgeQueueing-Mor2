@@ -20,16 +20,9 @@ def simulate():
     # arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95]
     Nuser = 100000
-    #   user_prob=[0.5, 0.5]
     mu = 1
-    rounds =1
+    rounds =5
     modes = ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS']  ###  FB is currently unavailable
-
-    # for i in range(len(arrival_rates)):
-    #     Mean = compare(Nuser, arrival_rates[i], mu, modes)
-    #     # store simulation data in results.h5
-    #     with pd.HDFStore('results.h5') as store:
-    #         store.put(str(arrival_rates[i]), Mean)
 
     for i in range(len(arrival_rates)):
         print(arrival_rates[i])
@@ -84,29 +77,6 @@ def simulate():
         ax.set_ylim([0, max([store[str(arrival_rates[i])]['peak'][modes[1]] for i in range(len(arrival_rates))]) * 1.1])
         plt.show()
 
-    # # queue length
-    # fig, ax = plt.subplots(figsize=(15,8))
-    # with pd.HDFStore('results.h5') as store:
-    #     for m in range(len(modes)):
-    #         plt.plot(arrival_rates,[store[str(arrival_rates[i])]['len'][modes[m]] for i in range(len(arrival_rates))] )
-    #
-    #     plt.ylabel('queue length')
-    #     plt.xlabel('arrival rates')
-    #     plt.legend(modes)
-    #     plt.show()
-
-    # ineffective depart ratio
-    # fig, ax = plt.subplots(figsize=(15,8))
-    # with pd.HDFStore('results.h5') as store:
-    #     for m in range(len(modes)):
-    #         plt.plot(arrival_rates,[store[str(arrival_rates[i])]['ineff_dept'][modes[m]] for i in range(len(arrival_rates))] )
-    #
-    #     plt.ylabel('Ineffective departure ratio')
-    #     plt.xlabel('arrival rates')
-    #     plt.legend(modes)
-    #     plt.show()
-
-
 def compare(Nuser=1000, arrival_rate=0.35, mu=1,
             modes=['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS']):
     '''
@@ -127,9 +97,6 @@ def compare(Nuser=1000, arrival_rate=0.35, mu=1,
     # print(arrival_rate)
     for i in range(len(modes)):
         queue.change_mode(modes[i])
-        # print(modes[i])
-        # print(queue.Customer.dtype.names)
-        # print(queue.Customer)
         queue.queueing()
         Mean['age'][queue.mode] = queue.mean_age()
         Mean['peak'][queue.mode] = queue.mean_peak_age()

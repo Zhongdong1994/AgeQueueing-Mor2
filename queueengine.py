@@ -64,7 +64,7 @@ class QUEUE(object):
         # init queue for different priorities
         self.queues = []
         # suspended queue for preempted packets
-        self.suspended_queues = []
+        #self.suspended_queues = []
         ### the queue with all effetive departures
         self.effe_queues = []
         self.conqueue=[]
@@ -101,7 +101,7 @@ class QUEUE(object):
         # init queue for different priorities
         self.queues = []
         # suspended queue for preempted packets, only for self.preemptive=True
-        self.suspended_queues = []
+        #self.suspended_queues = []
         self.effe_queues = []
         self.conqueue = []
 
@@ -114,13 +114,10 @@ class QUEUE(object):
         # print(self.Customer['Priority'])
 
 
-        self.Customer['Work_Load'] = np.random.exponential(1 / self.mu, size=self.Nuser)
-        #self.Customer['Work_Load'] = 0.29752*np.random.weibull(0.39837, size=self.Nuser)
+        #self.Customer['Work_Load'] = np.random.exponential(1 / self.mu, size=self.Nuser)
+        self.Customer['Work_Load'] = 0.29752*np.random.weibull(0.39837, size=self.Nuser)
         #self.Customer['Work_Load'] =  np.random.uniform(0,2, size=self.Nuser)
 
-
-        # print(self.Customer['Work_Load'])
-        # print((1/np.array(self.mu)))
         self.Customer['Remain_Work_Load'] = np.copy(self.Customer['Work_Load'])
 
     def arrive(self, i):
@@ -136,7 +133,7 @@ class QUEUE(object):
         else:
             self.Customer['Inqueue_Time'][i] = self.Customer['Inqueue_Time'][i - 1] + self.Customer['Arrival_Intv'][i]
             # compute queue length upon the arrival of i-th customer
-            self.Customer['Queue_Number'][i] = self.queue_len()
+            self.Customer['Queue_Number'][i] = len(self.queues)
             # age upon the i-th arrival
             self.Customer['Age_Arvl'][i] = self.Customer['Age_Dept'][self.last_depart] + self.Customer['Inqueue_Time'][
                 i] - self.Customer['Dequeue_Time'][self.last_depart]
@@ -147,32 +144,8 @@ class QUEUE(object):
             # enqueue customer with respect to its priority
             self.queue_append(i)
 
-    def suspended_queue_len(self):
-        ''' return suspended queue length
-        '''
-        return len(self.suspended_queues)
 
-    def queue_len(self):
-        ''' return current queue length
-        '''
-        return len(self.queues) + self.suspended_queue_len()
 
-    def s_os(self, temp=1):  ### return the index of minimum original work load in the suspended queue
-        minimum = 0
-        for x in range(temp):
-            if self.Customer['Work_Load'][self.suspended_queues[x]] < self.Customer['Work_Load'][
-                self.suspended_queues[minimum]]:
-                minimum = x
-        return minimum
-
-    def s_rs(self,
-             temp=1):  ### return the index of minimum remaining work load in the suspended queue
-        minimum = 0
-        for x in range(temp):
-            if self.Customer['Remain_Work_Load'][self.suspended_queues[x]] < self.Customer['Remain_Work_Load'][
-                self.suspended_queues[minimum]]:
-                minimum = x
-        return minimum
 
     def os(self, temp=1):  ### return the index of minimum original work load in the queue
         minimum = 0
@@ -204,46 +177,14 @@ class QUEUE(object):
         modes = ['FCFS', 'RANDOM','LCFS','PLCFS','SJF','PSJF','SRPT','ABS','PABS']
         '''
         # check preempted customer
-        if self.preemptive and self.suspended_queue_len() > 0:
-            if self.mode == 'PLCFS':
-                temp = self.suspended_queues.pop()
-                # print(temp)
-                return temp
-            if self.mode == 'PSJF':
-                # print("working")
-                if len(self.queues) == 0:
-                    return self.suspended_queues.pop(self.s_os(len(self.suspended_queues)))
-                elif self.Customer['Work_Load'][self.suspended_queues[self.s_os(len(self.suspended_queues))]] < \
-                        self.Customer['Work_Load'][self.queues[self.os(len(self.queues))]]:
-                    return self.suspended_queues.pop(self.s_os(len(self.suspended_queues)))
-                else:
-                    return self.queues.pop(self.os(len(self.queues)))
-
-            if self.mode == 'SRPT':
-                if len(self.queues) == 0:
-                    return self.suspended_queues.pop(self.s_rs(len(self.suspended_queues)))
-                elif self.Customer['Remain_Work_Load'][self.suspended_queues[self.s_rs(len(self.suspended_queues))]] < \
-                        self.Customer['Remain_Work_Load'][self.queues[self.rs(len(self.queues))]]:
-                    return self.suspended_queues.pop(self.s_rs(len(self.suspended_queues)))
-                else:
-                    return self.queues.pop(self.rs(len(self.queues)))
-                # return self.suspended_queues.pop(self.s_rs(len(self.suspended_queues)))
-        if self.queue_len() > 0:
+        if len(self.queues) > 0:
             if self.mode == 'FCFS':
                 return self.queues.pop(0)
-            if self.mode == 'LCFS':
+            if self.mode == 'LCFS' or 'PLCFS':
                 return self.queues.pop()
             if self.mode == 'RANDOM':
-                temp = random.randint(0, len(self.queues) - 1)
-                # print(temp)
-                return self.queues.pop(temp)
-            if self.mode == 'SJF':
-                return self.queues.pop(self.os(len(self.queues)))
-            if self.mode == 'PLCFS':
-                # print(self.queues)
-                return self.queues.pop()
-            if self.mode == 'PSJF':
-                # print("working")
+                return random.randint(0, len(self.queues) - 1)
+            if self.mode == 'SJF' or 'PSJF':
                 return self.queues.pop(self.os(len(self.queues)))
             if self.mode == 'SRPT':
                 return self.queues.pop(self.rs(len(self.queues)))
@@ -263,14 +204,7 @@ class QUEUE(object):
         else:
             print('Improper queueing mode in queue_append!', self.mode)
 
-    def suspended_queue_append(self, i):
-        '''
-        append one preempted customer
-        '''
-        if self.mode in ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS']:
-            self.suspended_queues.append(i)
-        else:
-            print('Improper queueing mode in suspended_queue_append!', self.mode)
+
 
     def minAservice(self,temp=[]): # return the  one job in temp[] whose attained service time is least
             minimum = temp[0]
@@ -371,7 +305,7 @@ class QUEUE(object):
         if self.i_serving >= 0:
             t = self.serve(self.i_serving, t, t_end)
         # when there is additional time to serve other customers
-        while (t < t_end or t_end == -1) and self.queue_len() > 0:
+        while (t < t_end or t_end == -1) and len(self.queues) > 0:
             # next customer
             self.i_serving = self.queue_pop(t)  # here we get the index of next customer
             # serve the customer
@@ -383,18 +317,11 @@ class QUEUE(object):
         modes = ['PLCFS','PSJF','SRPT']
         '''
         if self.mode == 'PLCFS':
-            # always preempt
             return True
         elif self.mode == 'SRPT':
-            # depends on the remaining workload
-            # print("working")
             return self.Customer['Remain_Work_Load'][i_new] < self.Customer['Remain_Work_Load'][i_old]
         elif self.mode == 'PSJF':
-            # compare the expected age, current time is the arrival time of i_new
-            # the expected age of i_new is its work load
-            temp = self.Customer['Work_Load'][i_new] < self.Customer['Work_Load'][i_old]
-            # print(temp)
-            return temp
+            return self.Customer['Work_Load'][i_new] < self.Customer['Work_Load'][i_old]
         elif self.mode=='PABS':
              check= self.Customer['Remain_Work_Load'][i_new] - self.Customer['Inqueue_Time'][i_new]< \
                     self.Customer['Remain_Work_Load'][i_old] - self.Customer['Inqueue_Time'][i_old]
@@ -410,14 +337,9 @@ class QUEUE(object):
         '''
         i_old is preempted by i_new
         '''
-        if self.mode=='PABS':
-            self.queue_append(i_old)
-            self.i_serving=i_new
-        else:
-            # suspend i_old
-            self.suspended_queue_append(i_old)
-            # set the new customer as serving
-            self.i_serving = i_new
+        self.queue_append(i_old)
+        self.i_serving=i_new
+
 
 
     def queueing(self):
