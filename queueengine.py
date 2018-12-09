@@ -177,22 +177,21 @@ class QUEUE(object):
         modes = ['FCFS', 'RANDOM','LCFS','PLCFS','SJF','PSJF','SRPT','ABS','PABS']
         '''
         # check preempted customer
-        if len(self.queues) > 0:
-            if self.mode == 'FCFS':
-                return self.queues.pop(0)
-            if self.mode == 'LCFS' or 'PLCFS':
-                return self.queues.pop()
-            if self.mode == 'RANDOM':
-                return random.randint(0, len(self.queues) - 1)
-            if self.mode == 'SJF' or 'PSJF':
-                return self.queues.pop(self.os(len(self.queues)))
-            if self.mode == 'SRPT':
-                return self.queues.pop(self.rs(len(self.queues)))
-            if self.mode == 'PS':
-                return self.queues.pop(self.rs(len(self.queues)))
-            if self.mode=='ABS' or self.mode=='PABS':
-                return self.queues.pop(self.ageDropLargest(len(self.queues), currentTime))
-        return -1
+        if self.mode == 'FCFS':
+            return self.queues.pop(0)
+        if self.mode == 'LCFS' or self.mode == 'PLCFS':
+            return self.queues.pop()
+        if self.mode == 'RANDOM':
+            return self.queues.pop(random.randint(0, len(self.queues) - 1))
+        if self.mode == 'SJF' or self.mode == 'PSJF':
+            return self.queues.pop(self.os(len(self.queues)))
+        if self.mode == 'SRPT':
+            return self.queues.pop(self.rs(len(self.queues)))
+        if self.mode == 'PS':
+            return self.queues.pop(self.rs(len(self.queues)))
+        if self.mode == 'ABS' or self.mode == 'PABS':
+            return self.queues.pop(self.ageDropLargest(len(self.queues), currentTime))
+
 
     def queue_append(self, i):
         '''
