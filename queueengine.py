@@ -165,8 +165,8 @@ class QUEUE(object):
     def ageDropLargest(self,temp=1,currentTime=0):
         minimum = 0
         for x in range(temp):
-            if currentTime+self.Customer['Remain_Work_Load'][self.queues[x]]-self.Customer['Inqueue_Time'][self.queues[x]] < \
-                    currentTime+self.Customer['Remain_Work_Load'][self.queues[minimum]]-self.Customer['Inqueue_Time'][self.queues[minimum]]:
+            if currentTime+self.Customer['Remain_Work_Load'][self.queues[x]]-max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][self.queues[x]]) < \
+                    currentTime+self.Customer['Remain_Work_Load'][self.queues[minimum]]-max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][self.queues[minimum]]):
                 minimum = x
         return minimum
 
@@ -322,8 +322,8 @@ class QUEUE(object):
         elif self.mode == 'PSJF':
             return self.Customer['Work_Load'][i_new] < self.Customer['Work_Load'][i_old]
         elif self.mode=='PABS':
-             check= self.Customer['Remain_Work_Load'][i_new] - self.Customer['Inqueue_Time'][i_new]< \
-                    self.Customer['Remain_Work_Load'][i_old] - self.Customer['Inqueue_Time'][i_old]
+             check= self.Customer['Remain_Work_Load'][i_new] - max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][i_new])< \
+                    self.Customer['Remain_Work_Load'][i_old] - max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][i_old])
              return check
         else:
             return False
