@@ -424,7 +424,7 @@ class QUEUE(object):
         the average queue length observed based on customer arrivals due to PASTA
         return: mean queue length
         '''
-        return sum(self.Customer['Queue_Number'][int(self.Nuser / 2):] / (self.Nuser - int(self.Nuser / 2)))
+        return sum(self.Customer['Queue_Number'][int(self.Nuser)] / (self.Nuser))
 
     @property
     def parameters(self):
