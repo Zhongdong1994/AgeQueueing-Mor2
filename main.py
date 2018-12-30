@@ -19,10 +19,11 @@ def simulate():
     '''
     # arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
-    Nuser = 1000
+    Nuser = 10000
     mu = 1
     rounds =10
-    modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS']  ###  FB is currently unavailable
+    #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS','MPSJF', 'MSRPT','MPABS']  ###  FB is currently unavailable
+    modes = ['PSJF', 'SRPT',  'PABS', 'MPSJF', 'MSRPT', 'MPABS','MPSJF2','MSRPT2', 'MPABS2']
 
     data = np.zeros(1, dtype=np.dtype([('age', float),
                                                 ('peak', float),
@@ -111,7 +112,7 @@ def compare(Nuser=1000, arrival_rate=0.35, mu=1,
     '''
     compare different scheduling modes
     '''
-    modes = ['FCFS','RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS']
+    #modes = ['FCFS','RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS']
     data = np.zeros(len(modes), dtype=np.dtype([('age', float),
                                                 ('peak', float),
                                                 ('len', float),
