@@ -22,16 +22,28 @@ def simulate():
     Nuser = 10000
     mu = 1
     rounds =10
-    #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS','MPSJF', 'MSRPT','MPABS']  ###  FB is currently unavailable
-    modes = ['PSJF', 'SRPT',  'PABS', 'MPSJF', 'MSRPT', 'MPABS','MPSJF2','MSRPT2', 'MPABS2']
+    #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PADS','MPSJF', 'MSRPT','MPADS']  ###  FB is currently unavailable
+    #modes = ['PSJF', 'SRPT',  'PADS', 'MPSJF', 'MSRPT', 'MPADS','MPSJF2','MSRPT2', 'MPADS2']
+    modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PADS','SRPT2']
+    '''
+    SRPT2 policy is very similar to SRPT policy expect that SRPT2 chooses the job that has latest arrival time when multiple jobs have the
+    same remaining time
+    
+    MPSJF, MSRPT and MPADS policies are modified version of PSJF, SRPT and PADS. The difference between these modified polices and original 
+    policies is: once the preemption happens, those modified policies will drop all outdated jobs. Motivations: Outdated jobs sometimes will block new
+    jobs and the AoI/PAoI benefits nothing from serving the outdated jobs.
+    
+    MPSJF2, MSRPT2 and MPADS2 policies are modified version of MPSJF, MSRPT and MPADS. Previous policies (i.e., MPSJF, MSRPT and MPADS) drop outdated jobs
+    only when the preemption happens, but now new policies drop outdated jobs once the next to be served job is decided. 
+    
+    
+    '''
+
 
     data = np.zeros(1, dtype=np.dtype([('age', float),
                                                 ('peak', float),
                                                 ('len', float),
                                                 ('response', float)]))
-
-
-
     for i in range(len(arrival_rates)):
         print(arrival_rates[i])
         Mean = compare(Nuser, arrival_rates[i], mu, modes)
@@ -108,11 +120,11 @@ def simulate():
         plt.show()
 
 def compare(Nuser=1000, arrival_rate=0.35, mu=1,
-            modes=['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS']):
+            modes=['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS']):
     '''
     compare different scheduling modes
     '''
-    #modes = ['FCFS','RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PABS']
+    #modes = ['FCFS','RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS']
     data = np.zeros(len(modes), dtype=np.dtype([('age', float),
                                                 ('peak', float),
                                                 ('len', float),
