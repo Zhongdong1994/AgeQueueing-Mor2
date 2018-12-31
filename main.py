@@ -23,8 +23,10 @@ def simulate():
     mu = 1
     rounds =10
     #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PADS','MPSJF', 'MSRPT','MPADS']  ###  FB is currently unavailable
-    #modes = ['PSJF', 'SRPT',  'PADS', 'MPSJF', 'MSRPT', 'MPADS','MPSJF2','MSRPT2', 'MPADS2']
-    modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PADS','SRPT2']
+    #modes = ['PSJF', 'SRPT',  'PADS', 'MPSJF', 'MSRPT', 'MPADS','MPSJF2','MSRPT2', 'MPADS2','PADF','MPADF','MPADF2','ADM','PADM']
+    #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS','SRPT2','ADF','PADF']
+    #modes=['ADS','ADF','ADM','PADS','PADF','PADM','MPADS','MPADF','MPADM2']
+    modes=['SRPT','SRPT3','MSRPT','MSRPT2']
     '''
     SRPT2 policy is very similar to SRPT policy expect that SRPT2 chooses the job that has latest arrival time when multiple jobs have the
     same remaining time
