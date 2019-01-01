@@ -19,7 +19,7 @@ def simulate():
     '''
     # arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
-    Nuser = 100000
+    Nuser = 1000
     mu = 1
     rounds =10
     #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PADS','MPSJF', 'MSRPT','MPADS']  ###  FB is currently unavailable
@@ -54,14 +54,11 @@ def simulate():
         print(arrival_rates[i])
         Mean = compare(Nuser, arrival_rates[i], mu, modes)
         if i==0:
-            Mean1 = Mean  ### Mean1 is to store all averagered data (is exactly same as the output)
             Mean2 = Mean  ### Mean2 is to store all data (the data generated in all loops)
         else:
             tempMean = pd.DataFrame(data)
             tempMean['age']=arrival_rates[i]
-            Mean1 = Mean1.append(tempMean)
             Mean2 = Mean2.append(tempMean)
-            Mean1=Mean1.append(Mean)
             Mean2 = Mean2.append(Mean)
 
 
@@ -69,12 +66,19 @@ def simulate():
             temp=compare(Nuser, arrival_rates[i], mu, modes)
             tempMean = pd.DataFrame(data)
             tempMean['age'] = arrival_rates[i]
-            tempMean['peak'] = j
+            tempMean['peak'] = j+1
             Mean2 = Mean2.append(tempMean)
             Mean2=Mean2.append(temp)
             Mean += temp
 
         Mean = Mean.multiply(1 / rounds)
+        if i==0:
+            Mean1 = Mean  ### Mean1 is to store all averagered data (is exactly same as the output)
+        else:
+            tempMean = pd.DataFrame(data)
+            tempMean['age']=arrival_rates[i]
+            Mean1 = Mean1.append(tempMean)
+            Mean1=Mean1.append(Mean)
         print(Mean)
         # store simulation data in results.h5
         with pd.HDFStore('results.h5') as store:
