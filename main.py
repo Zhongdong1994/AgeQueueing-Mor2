@@ -39,7 +39,7 @@ def simulate():
     policies is: once the preemption happens, those modified policies will drop all outdated jobs. Motivations: Outdated jobs sometimes will block new
     jobs and the AoI/PAoI benefits nothing from serving the outdated jobs.
     
-    PSJFE, SRPTE and PADSE will kick out the outdated jobs both when the preemption happens and when normal departure happens.
+    PSJFE, SRPTE and PADSE will kick out the outdated jobs both when the preemption happens and when normal departure happens. 
     
     
     '''
