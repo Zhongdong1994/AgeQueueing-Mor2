@@ -23,24 +23,23 @@ def simulate():
     mu = 1
     rounds =10
     #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PADS','MPSJF', 'MSRPT','MPADS']  ###  FB is currently unavailable
-    #modes = ['PSJF', 'SRPT',  'PADS', 'MPSJF', 'MSRPT', 'MPADS','MPSJF2','MSRPT2', 'MPADS2','PADF','MPADF','MPADF2','ADM','PADM']
-    #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS','SRPT2','ADF','PADF']
+    #modes = ['PSJF', 'SRPT',  'PADS', 'MPSJF', 'MSRPT', 'MPADS','PSJFE','SRPTE', 'MPADS2','PADF','MPADF','MPADF2','ADM','PADM']
+    #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS','SRPTL','ADF','PADF']
     #modes=['ADS','ADF','ADM','PADS','PADF','PADM','MPADS','MPADF','MPADM2']
-    #modes=['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF','SRPT','SRPT3','MSRPT','MSRPT2']
-    modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF','PSJF', 'MPSJF', 'MPSJF2', 'SRPT', 'SRPT3', 'MSRPT', 'MSRPT2', 'ADS', 'PADS', 'MPADS', 'MPADS2', 'ADF',
+    #modes=['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF','SRPT','SRPT3','MSRPT','SRPTE']
+    modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF','PSJF', 'MPSJF', 'PSJFE', 'SRPT', 'SRPTA', 'MSRPT', 'SRPTE', 'ADS', 'PADS', 'MPADS', 'MPADS2', 'ADF',
              'PADF', 'MPADF', 'MPADF2', 'ADM', 'PADM', 'MPADM', 'MPADM2']
 
 
     '''
-    SRPT2 policy is very similar to SRPT policy expect that SRPT2 chooses the job that has latest arrival time when multiple jobs have the
+    SRPTL policy is very similar to SRPT policy expect that SRPTL chooses the job that has latest arrival time when multiple jobs have the
     same remaining time
     
     MPSJF, MSRPT and MPADS policies are modified version of PSJF, SRPT and PADS. The difference between these modified polices and original 
     policies is: once the preemption happens, those modified policies will drop all outdated jobs. Motivations: Outdated jobs sometimes will block new
     jobs and the AoI/PAoI benefits nothing from serving the outdated jobs.
     
-    MPSJF2, MSRPT2 and MPADS2 policies are modified version of MPSJF, MSRPT and MPADS. Previous policies (i.e., MPSJF, MSRPT and MPADS) drop outdated jobs
-    only when the preemption happens, but now new policies drop outdated jobs once the next to be served job is decided. 
+    PSJFE, SRPTE and PADSE will kick out the outdated jobs both when the preemption happens and when normal departure happens.
     
     
     '''

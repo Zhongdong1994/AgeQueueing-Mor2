@@ -35,7 +35,7 @@ class QUEUE(object):
         self.num_user_type = 1
         self.mu = mu
         self.mode = mode
-        self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT','PADS','MPSJF', 'MSRPT','MPADS','MPSJF2','MSRPT2','MPADS2','SRPT2','SRPT3',
+        self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2','SRPTL','SRPTA',
                                         'PADF','MPADF','MPADF2','PADM','MPADM','MPADM2']
         self.i_depart = np.zeros(self.num_user_type, dtype=int)
         self.largest_inqueue_time=0  ### largest inqueue time among all departed jobs
@@ -72,7 +72,7 @@ class QUEUE(object):
         self.effe_departure=[]
 
     def reset(self):
-        self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT','PADS','MPSJF', 'MSRPT','MPADS','MPSJF2','MSRPT2','MPADS2','SRPT2','SRPT3',
+        self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2','SRPTL','SRPTA',
                                         'PADF','MPADF','MPADF2','PADM','MPADM','MPADM2']
         self.i_depart = np.zeros(self.num_user_type, dtype=int)
         # self.i_depart_effective = np.zeros(self.num_user_type, dtype=int)
@@ -232,18 +232,18 @@ class QUEUE(object):
             return self.queues.pop(random.randint(0, len(self.queues) - 1))
         if self.mode == 'SJF' or self.mode == 'PSJF' or self.mode == 'MPSJF':
             return  self.queues.pop(self.os(len(self.queues)))
-        if self.mode=='MPSJF2':
+        if self.mode=='PSJFE':
             returnvalue= self.queues.pop(self.os(len(self.queues)))
             #print(returnvalue)
             for x in self.queues:
                 if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
                     self.queues.remove(x)
             return  returnvalue
-        if self.mode == 'SRPT' or self.mode == 'MSRPT'or self.mode == 'SRPT3':
+        if self.mode == 'SRPT' or self.mode == 'MSRPT'or self.mode == 'SRPTA':
             return self.queues.pop(self.rs(len(self.queues)))
-        if self.mode=='SRPT2':
+        if self.mode=='SRPTL':
             return self.queues.pop(self.rs2(len(self.queues)))
-        if self.mode=='MSRPT2':
+        if self.mode=='SRPTE':
             returnvalue= self.queues.pop(self.rs(len(self.queues)))
             for x in self.queues:
                 if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
@@ -283,8 +283,8 @@ class QUEUE(object):
         append one customer. Left ones goes out first, and right ones goes last
         modes = ['FCFS', 'RANDOM','LCFS','PS','PLCFS','FB','SJF','PSJF','SRPT','ADS]
         '''
-        if self.mode in ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS','MPSJF', 'MSRPT','MPADS','MPSJF2','MSRPT2','MPADS2',
-                         'SRPT2','SRPT3','ADF','PADF','MPADF','MPADF2','ADM','PADM','MPADM','MPADM2']:
+        if self.mode in ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2',
+                         'SRPTL','SRPTA','ADF','PADF','MPADF','MPADF2','ADM','PADM','MPADM','MPADM2']:
             self.queues.append(i)
         else:
             print('Improper queueing mode in queue_append!', self.mode)
@@ -404,18 +404,18 @@ class QUEUE(object):
         '''
         if self.mode == 'PLCFS':
             return True
-        elif self.mode == 'SRPT' or self.mode == 'MSRPT' or self.mode=='MSRPT2' or self.mode=='SRPT2':
+        elif self.mode == 'SRPT' or self.mode == 'MSRPT' or self.mode=='SRPTE' or self.mode=='SRPTL':
             return self.Customer['Remain_Work_Load'][i_new] < self.Customer['Remain_Work_Load'][i_old]
-        elif self.mode == 'SRPT3':
+        elif self.mode == 'SRPTA':
             ageAreaofPreemption=(self.Customer['Inqueue_Time'][i_old]-self.largest_inqueue_time)*(self.Customer['Remain_Work_Load'][i_new]-self.Customer['Remain_Work_Load'][i_old])
             ageAreaofNonPreemption=(self.Customer['Inqueue_Time'][i_new]-self.Customer['Inqueue_Time'][i_old])*self.Customer['Remain_Work_Load'][i_old]
             if ageAreaofPreemption<0:
                 return True
             else:
                 return ageAreaofPreemption < ageAreaofNonPreemption
-        elif self.mode == 'PSJF' or self.mode == 'MPSJF' or self.mode == 'MPSJF2':
+        elif self.mode == 'PSJF' or self.mode == 'MPSJF' or self.mode == 'PSJFE':
             return self.Customer['Work_Load'][i_new] < self.Customer['Work_Load'][i_old]
-        elif self.mode=='PADS' or self.mode=='MPADS' or self.mode=='MPADS2':
+        elif self.mode=='PADS' or self.mode=='MPADS' or self.mode=='PADSE':
              check= self.Customer['Remain_Work_Load'][i_new] - max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][i_new])< \
                     self.Customer['Remain_Work_Load'][i_old] - max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][i_old])
              return check
@@ -442,8 +442,8 @@ class QUEUE(object):
         '''
         self.queue_append(i_old)
         self.i_serving=i_new
-        if self.mode == 'MSRPT'  or  self.mode == 'MPSJF' or  self.mode=='MPADS' or self.mode == 'MPSJF2' or self.mode == 'MSRPT2' or  \
-                self.mode=='MPADS2' or self.mode=='MPADF'  or  self.mode=='MPADF2' or self.mode=='MPADM'  or self.mode=='MPADM2':
+        if self.mode == 'MSRPT'  or  self.mode == 'MPSJF' or  self.mode=='MPADS' or self.mode == 'PSJFE' or self.mode == 'SRPTE' or  \
+                self.mode=='PADSE' or self.mode=='MPADF'  or  self.mode=='MPADF2' or self.mode=='MPADM'  or self.mode=='MPADM2':
             self.queues = []
 
 
@@ -521,7 +521,7 @@ class QUEUE(object):
         return total_page / len(self.effe_queues)
 
     def mean_response_time(self):
-        if self.mode == 'MSRPT' or  self.mode == 'MPSJF' or  self.mode=='MPADS' or self.mode == 'MPSJF2' or self.mode == 'MSRPT2' or  self.mode=='MPADS2' \
+        if self.mode == 'MSRPT' or  self.mode == 'MPSJF' or  self.mode=='MPADS' or self.mode == 'PSJFE' or self.mode == 'SRPTE' or  self.mode=='PADSE' \
                 or self.mode=='MPADF' or self.mode=='MPADF2'or self.mode=='MPADM' or self.mode=='MPADM2':
             total_response_time = 0
             for x in self.effe_departure:
@@ -538,7 +538,7 @@ class QUEUE(object):
         the average queue length observed based on customer arrivals due to PASTA
         return: mean queue length
         '''
-        if self.mode == 'MSRPT' or  self.mode == 'MPSJF' or  self.mode=='MPADS' or self.mode == 'MPSJF2' or self.mode == 'MSRPT2' or  self.mode=='MPADS2' \
+        if self.mode == 'MSRPT' or  self.mode == 'MPSJF' or  self.mode=='MPADS' or self.mode == 'PSJFE' or self.mode == 'SRPTE' or  self.mode=='PADSE' \
                 or self.mode == 'MPADF' or self.mode == 'MPADF2' or self.mode=='MPADM' or self.mode=='MPADM2':
             total_queuelength = 0
             for x in self.effe_departure:
