@@ -19,7 +19,7 @@ def simulate():
     '''
     # arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
-    Nuser = 5000
+    Nuser = 50000
     mu = 1
     rounds =10
     #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PADS','MPSJF', 'MSRPT','MPADS']  ###  FB is currently unavailable
@@ -27,8 +27,9 @@ def simulate():
     #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS','SRPTL','ADF','PADF']
     #modes=['ADS','ADF','ADM','PADS','PADF','PADM','MPADS','MPADF','MPADM2']
     #modes=['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF','SRPT','SRPT3','MSRPT','SRPTE']
-    modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF','PSJF', 'MPSJF', 'PSJFE', 'SRPT', 'SRPTA', 'MSRPT', 'SRPTE', 'ADS', 'PADS', 'MPADS', 'MPADS2', 'ADF',
-             'PADF', 'MPADF', 'MPADF2', 'ADM', 'PADM', 'MPADM', 'MPADM2']
+    # modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF','PSJF', 'MPSJF', 'PSJFE', 'SRPT', 'SRPTA', 'MSRPT', 'SRPTE', 'ADS', 'PADS', 'MPADS', 'MPADS2', 'ADF',
+    #          'PADF', 'MPADF', 'MPADF2', 'ADM', 'PADM', 'MPADM', 'MPADM2']
+    modes=['SJF','SJFE']
 
 
     '''
@@ -48,7 +49,7 @@ def simulate():
     data = np.zeros(1, dtype=np.dtype([('age', float),
                                                 ('peak', float),
                                                 ('len', float),
-                                                ('response', float)]))
+                                                ('response', float)]))  ### only used for define data type ---->tempMean
     for i in range(len(arrival_rates)):
         print(arrival_rates[i])
         Mean = compare(Nuser, arrival_rates[i], mu, modes)

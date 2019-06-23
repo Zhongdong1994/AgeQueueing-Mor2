@@ -118,8 +118,8 @@ class QUEUE(object):
         # print(self.Customer['Priority'])
 
 
-        #self.Customer['Work_Load'] = np.random.exponential(1 / self.mu, size=self.Nuser)
-        self.Customer['Work_Load'] = 0.29752*np.random.weibull(0.39837, size=self.Nuser)
+        self.Customer['Work_Load'] = np.random.exponential(1 / self.mu, size=self.Nuser)
+        #self.Customer['Work_Load'] = 0.29752*np.random.weibull(0.39837, size=self.Nuser)
         #self.Customer['Work_Load'] =  np.random.uniform(0,2, size=self.Nuser)
         #self.Customer['Work_Load']=0.9*np.ones(self.Nuser)
 
@@ -232,6 +232,12 @@ class QUEUE(object):
             return self.queues.pop(random.randint(0, len(self.queues) - 1))
         if self.mode == 'SJF' or self.mode == 'PSJF' or self.mode == 'MPSJF':
             return  self.queues.pop(self.os(len(self.queues)))
+        if self.mode=='SJFE':
+            returnvalue = self.queues.pop(self.os(len(self.queues)))
+            for x in self.queues:
+                if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
+                    self.queues.remove(x)
+            return returnvalue
         if self.mode=='PSJFE':
             returnvalue= self.queues.pop(self.os(len(self.queues)))
             #print(returnvalue)
@@ -283,7 +289,7 @@ class QUEUE(object):
         append one customer. Left ones goes out first, and right ones goes last
         modes = ['FCFS', 'RANDOM','LCFS','PS','PLCFS','FB','SJF','PSJF','SRPT','ADS]
         '''
-        if self.mode in ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2',
+        if self.mode in ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'SJFE','PSJF', 'SRPT','ADS','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2',
                          'SRPTL','SRPTA','ADF','PADF','MPADF','MPADF2','ADM','PADM','MPADM','MPADM2']:
             self.queues.append(i)
         else:
