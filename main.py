@@ -19,7 +19,7 @@ def simulate():
     '''
     # arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
-    Nuser = 50000
+    Nuser = 10000
     mu = 1
     rounds =10
     #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PADS','MPSJF', 'MSRPT','MPADS']  ###  FB is currently unavailable
@@ -29,7 +29,8 @@ def simulate():
     #modes=['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF','SRPT','SRPT3','MSRPT','SRPTE']
     # modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF','PSJF', 'MPSJF', 'PSJFE', 'SRPT', 'SRPTA', 'MSRPT', 'SRPTE', 'ADS', 'PADS', 'MPADS', 'MPADS2', 'ADF',
     #          'PADF', 'MPADF', 'MPADF2', 'ADM', 'PADM', 'MPADM', 'MPADM2']
-    modes=['SJF','SJFE']
+    #modes=['SJF','SJFE']
+    modes=['AoI2','SRPTA']
 
 
     '''
@@ -42,6 +43,9 @@ def simulate():
     
     PSJFE, SRPTE and PADSE will kick out the outdated jobs both when the preemption happens and when normal departure happens. 
     
+    AoI2 (effective and preemptive policy) means that this policy uses "the power of 2". For preemption, it compares the future AoI 
+    between continuously serving current job and/or   serving new arrival, and making decision to minimize the future AoI. 
+    For departure, it selects two jobs from effective jobs and compute  the future AoI. Making decision to minimize the future AoI. 
     
     '''
 

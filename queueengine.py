@@ -36,7 +36,7 @@ class QUEUE(object):
         self.mu = mu
         self.mode = mode
         self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2','SRPTL','SRPTA',
-                                        'PADF','MPADF','MPADF2','PADM','MPADM','MPADM2']
+                                        'PADF','MPADF','MPADF2','PADM','MPADM','MPADM2','AoI2']
         self.i_depart = np.zeros(self.num_user_type, dtype=int)
         self.largest_inqueue_time=0  ### largest inqueue time among all departed jobs
         # self.i_depart_effective = np.zeros(self.num_user_type, dtype=int)
@@ -73,7 +73,7 @@ class QUEUE(object):
 
     def reset(self):
         self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2','SRPTL','SRPTA',
-                                        'PADF','MPADF','MPADF2','PADM','MPADM','MPADM2']
+                                        'PADF','MPADF','MPADF2','PADM','MPADM','MPADM2','AoI2']
         self.i_depart = np.zeros(self.num_user_type, dtype=int)
         # self.i_depart_effective = np.zeros(self.num_user_type, dtype=int)
         self.last_depart = -1  # by default no customer departs
@@ -218,8 +218,32 @@ class QUEUE(object):
             return self.queues.index(minimum)
 
 
+    def ageBased2(self,temp=1):
+        if temp==1:
+            return 0
+        else:
+            area = 0
+            indexFirst = 0
+            # indexSecond=0
+            for x in range(temp - 1):
+                for y in range(temp - 1):
+                    area1 = self.Customer['Work_Load'][self.queues[y + 1]] * (
+                                self.Customer['Inqueue_Time'][self.queues[x]] - self.largest_inqueue_time)
+                    area2 = self.Customer['Work_Load'][self.queues[x]] * (
+                            self.Customer['Inqueue_Time'][self.queues[y + 1]] - self.largest_inqueue_time)
+                    if area < area1:
+                        area = area1
+                        indexFirst = x
+                        # indexSecond=y+1
+                    if area < area2:
+                        area = area2
+                        indexFirst = y + 1
+                        # indexSecond=x
+            return indexFirst
 
-    def queue_pop(self,currentTime=0):
+
+
+    def queue_pop(self,currentTime=0):  ### Coresponds to departure
         ''' pop one customer for service
         modes = ['FCFS', 'RANDOM','LCFS','PLCFS','SJF','PSJF','SRPT','ADS','PADS']
         '''
@@ -247,6 +271,12 @@ class QUEUE(object):
             return  returnvalue
         if self.mode == 'SRPT' or self.mode == 'MSRPT'or self.mode == 'SRPTA':
             return self.queues.pop(self.rs(len(self.queues)))
+        if self.mode=='AoI2':
+            returnvalue = self.queues.pop(self.ageBased2(len(self.queues)))
+            for x in self.queues:
+                if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
+                    self.queues.remove(x)
+            return returnvalue
         if self.mode=='SRPTL':
             return self.queues.pop(self.rs2(len(self.queues)))
         if self.mode=='SRPTE':
@@ -290,7 +320,7 @@ class QUEUE(object):
         modes = ['FCFS', 'RANDOM','LCFS','PS','PLCFS','FB','SJF','PSJF','SRPT','ADS]
         '''
         if self.mode in ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'SJFE','PSJF', 'SRPT','ADS','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2',
-                         'SRPTL','SRPTA','ADF','PADF','MPADF','MPADF2','ADM','PADM','MPADM','MPADM2']:
+                         'SRPTL','SRPTA','ADF','PADF','MPADF','MPADF2','ADM','PADM','MPADM','MPADM2','AoI2']:
             self.queues.append(i)
         else:
             print('Improper queueing mode in queue_append!', self.mode)
@@ -412,7 +442,7 @@ class QUEUE(object):
             return True
         elif self.mode == 'SRPT' or self.mode == 'MSRPT' or self.mode=='SRPTE' or self.mode=='SRPTL':
             return self.Customer['Remain_Work_Load'][i_new] < self.Customer['Remain_Work_Load'][i_old]
-        elif self.mode == 'SRPTA':
+        elif self.mode == 'SRPTA' or self.mode=='AoI2':
             ageAreaofPreemption=(self.Customer['Inqueue_Time'][i_old]-self.largest_inqueue_time)*(self.Customer['Remain_Work_Load'][i_new]-self.Customer['Remain_Work_Load'][i_old])
             ageAreaofNonPreemption=(self.Customer['Inqueue_Time'][i_new]-self.Customer['Inqueue_Time'][i_old])*self.Customer['Remain_Work_Load'][i_old]
             if ageAreaofPreemption<0:
@@ -449,7 +479,7 @@ class QUEUE(object):
         self.queue_append(i_old)
         self.i_serving=i_new
         if self.mode == 'MSRPT'  or  self.mode == 'MPSJF' or  self.mode=='MPADS' or self.mode == 'PSJFE' or self.mode == 'SRPTE' or  \
-                self.mode=='PADSE' or self.mode=='MPADF'  or  self.mode=='MPADF2' or self.mode=='MPADM'  or self.mode=='MPADM2':
+                self.mode=='PADSE' or self.mode=='MPADF'  or  self.mode=='MPADF2' or self.mode=='MPADM'  or self.mode=='MPADM2' or self.mode=='AoI2':
             self.queues = []
 
 
