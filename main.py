@@ -30,7 +30,8 @@ def simulate():
     # modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF','PSJF', 'MPSJF', 'PSJFE', 'SRPT', 'SRPTA', 'MSRPT', 'SRPTE', 'ADS', 'PADS', 'MPADS', 'MPADS2', 'ADF',
     #          'PADF', 'MPADF', 'MPADF2', 'ADM', 'PADM', 'MPADM', 'MPADM2']
     #modes=['SJF','SJFE']
-    modes=['AoI2','SRPTA']
+    #modes=['SRPT','SRPTE','SRPTA','AoI1','AoI2']
+    modes=['AoI1']
 
 
     '''
@@ -46,6 +47,8 @@ def simulate():
     AoI2 (effective and preemptive policy) means that this policy uses "the power of 2". For preemption, it compares the future AoI 
     between continuously serving current job and/or   serving new arrival, and making decision to minimize the future AoI. 
     For departure, it selects two jobs from effective jobs and compute  the future AoI. Making decision to minimize the future AoI. 
+    
+    AoI1 is the non-preemptive of AoI2
     
     '''
 
