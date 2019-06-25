@@ -282,6 +282,12 @@ class QUEUE(object):
             return self.queues.pop(0)
         if self.mode == 'LCFS' or self.mode == 'PLCFS':
             return self.queues.pop()
+        if self.mode == 'LCFSE':
+            returnvalue = self.queues.pop(self.os(len(self.queues)))
+            for x in self.queues:
+                if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
+                    self.queues.remove(x)
+            return returnvalue
         if self.mode == 'RANDOM':
             return self.queues.pop(random.randint(0, len(self.queues) - 1))
         if self.mode == 'SJF' or self.mode == 'PSJF' or self.mode == 'MPSJF':
@@ -349,7 +355,7 @@ class QUEUE(object):
         append one customer. Left ones goes out first, and right ones goes last
         modes = ['FCFS', 'RANDOM','LCFS','PS','PLCFS','FB','SJF','PSJF','SRPT','ADS]
         '''
-        if self.mode in ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'SJFE','PSJF', 'SRPT','ADS','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2',
+        if self.mode in ['FCFS', 'RANDOM', 'LCFS','LCFSE', 'PS', 'PLCFS', 'SJF', 'SJFE','PSJF', 'SRPT','ADS','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2',
                          'SRPTL','SRPTA','ADF','PADF','MPADF','MPADF2','ADM','PADM','MPADM','MPADM2','AoI2','AoI1']:
             self.queues.append(i)
         else:
