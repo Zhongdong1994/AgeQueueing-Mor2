@@ -36,7 +36,7 @@ class QUEUE(object):
         self.mu = mu
         self.mode = mode
         self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2','SRPTL','SRPTA',
-                                        'PADF','MPADF','MPADF2','PADM','MPADM','MPADM2','AoI2']
+                                        'PADF','MPADF','MPADF2','PADM','MPADM','MPADM2','AoI2P','AoI3P']
         self.i_depart = np.zeros(self.num_user_type, dtype=int)
         self.largest_inqueue_time=0  ### largest inqueue time among all departed jobs
         # self.i_depart_effective = np.zeros(self.num_user_type, dtype=int)
@@ -73,7 +73,7 @@ class QUEUE(object):
 
     def reset(self):
         self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2','SRPTL','SRPTA',
-                                        'PADF','MPADF','MPADF2','PADM','MPADM','MPADM2','AoI2']
+                                        'PADF','MPADF','MPADF2','PADM','MPADM','MPADM2','AoI2P','AoI3P']
         self.i_depart = np.zeros(self.num_user_type, dtype=int)
         # self.i_depart_effective = np.zeros(self.num_user_type, dtype=int)
         self.last_depart = -1  # by default no customer departs
@@ -222,54 +222,133 @@ class QUEUE(object):
         if temp==1:
             return 0
         else:
-            # for m in self.queues:
-            #     if self.Customer['Inqueue_Time'][m] < self.Customer['Inqueue_Time'][self.last_depart]:
-            #         self.queues.remove(m)
             area = 0
             indexFirst = 0
-            temp=len(self.queues)
-            # indexSecond=0
+            temp = len(self.queues)
             for x in range(temp - 1):
-                for y in range(temp - 1):
+                for y in range(x+1, temp):
                     # area1 = self.Customer['Work_Load'][self.queues[y + 1]] * (
                     #             self.Customer['Inqueue_Time'][self.queues[x]] - self.largest_inqueue_time)
                     # area2 = self.Customer['Work_Load'][self.queues[x]] * (
                     #         self.Customer['Inqueue_Time'][self.queues[y + 1]] - self.largest_inqueue_time)
-                    area1 = self.Customer['Work_Load'][self.queues[y + 1]] * (
+                    area1 = self.Customer['Work_Load'][self.queues[y]] * (
                             self.Customer['Inqueue_Time'][self.queues[x]] - self.Customer['Inqueue_Time'][self.last_depart])
                     area2 = self.Customer['Work_Load'][self.queues[x]] * (
-                            self.Customer['Inqueue_Time'][self.queues[y + 1]] - self.Customer['Inqueue_Time'][self.last_depart])
-                    # if area1 < 0:
-                    #     print("last departure index: %s" %self.last_depart)
-                    #     print("x index: %s" %self.queues[x])
-                    #     print("last departure's inqueue time: %s" % self.Customer['Inqueue_Time'][self.last_depart])
-                    #     print("x inqueue time: %s" %self.Customer['Inqueue_Time'][self.queues[x]])
-
-                    # if area1<0:
-                    #     print("last departure index: %s" % self.last_depart)
-                    #     print("last departure's inqueue time: %s" % self.Customer['Inqueue_Time'][self.last_depart])
-                    #     for n in self.queues:
-                    #         print(n)
-                    #         print(self.Customer['Inqueue_Time'][n])
-
-
-                    # elif area2<0:
-                    #     print(self.Customer['Inqueue_Time'][self.queues[y+1]])
-                    #     print(self.Customer['Inqueue_Time'][self.last_depart])
-
-                    # if area1<0 or area2<0:
-                    #     print(1)
-
-
+                            self.Customer['Inqueue_Time'][self.queues[y]] - self.Customer['Inqueue_Time'][self.last_depart])
+                    if area1<0 or area2<0:
+                        print(1)
                     if area < area1:
                         area = area1
                         indexFirst = x
                         # indexSecond=y+1
                     if area < area2:
                         area = area2
-                        indexFirst = y + 1
+                        indexFirst = y
                         # indexSecond=x
             return indexFirst
+
+
+
+    def ageBased2_2(self,temp=1):  #compute the exact age
+        if temp==1:
+            return 0
+        else:
+            area = 0
+            indexFirst = 0
+            for x in self.queues:
+                if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][self.last_depart]:
+                    self.queues.remove(x)
+
+            temp = len(self.queues)
+            for x in range(temp - 1):
+                for y in range(x+1, temp):
+                    totalarea=np.square(self.Customer['Work_Load'][self.queues[x]]+self.Customer['Work_Load'][self.queues[y]])/2+\
+                          (self.Customer['Work_Load'][self.queues[x]]+self.Customer['Work_Load'][self.queues[y]])*self.Customer['Response_Time'][self.last_depart]
+
+                    area1 = self.Customer['Work_Load'][self.queues[y]] * (
+                            self.Customer['Inqueue_Time'][self.queues[x]] - self.Customer['Inqueue_Time'][self.last_depart])
+                    area1=totalarea-area1
+                    area2 = self.Customer['Work_Load'][self.queues[x]] * (
+                            self.Customer['Inqueue_Time'][self.queues[y]] - self.Customer['Inqueue_Time'][self.last_depart])
+                    area2=totalarea-area2
+
+                    if area > area1:
+                        area = area1
+                        indexFirst = x
+                        # indexSecond=y+1
+                    if area > area2:
+                        area = area2
+                        indexFirst = y
+                        # indexSecond=x
+            return indexFirst
+
+
+
+
+    def ageBased3(self,temp=1):
+        if temp==1:
+            return 0
+        elif temp==2:
+            return  self.ageBased2(len(self.queues))
+        else:
+            area = 0
+            indexFirst = 0
+            for x in range(temp - 2):
+                for y in range(x+1, temp-1):
+                    for z in range(y+1,temp):
+                        if self.Customer['Inqueue_Time'][self.queues[x]]>self.Customer['Inqueue_Time'][self.queues[y]]:
+                            if self.Customer['Inqueue_Time'][self.queues[x]]>self.Customer['Inqueue_Time'][self.queues[z]]:
+                                if self.Customer['Inqueue_Time'][self.queues[y]]>self.Customer['Inqueue_Time'][self.queues[z]]:
+                                    temp1=x
+                                    temp2=y
+                                    temp3=z
+                                else:
+                                    temp1=x
+                                    temp2=z
+                                    temp3=y
+                            else:
+                                temp1=z
+                                temp2=x
+                                temp3=y
+                        else:
+                            if self.Customer['Inqueue_Time'][self.queues[z]]>self.Customer['Inqueue_Time'][self.queues[y]]:
+                                temp1 = z
+                                temp2 = y
+                                temp3 = x
+                            else:
+                                if self.Customer['Inqueue_Time'][self.queues[x]]>self.Customer['Inqueue_Time'][self.queues[z]]:
+                                    temp1 = y, temp2 = x, temp3 = z
+                                else:
+                                    temp1 = y
+                                    temp2 = z
+                                    temp3 = x
+                        area1=(self.Customer['Work_Load'][self.queues[temp2]]+self.Customer['Work_Load'][self.queues[temp3]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp1]] - self.Customer['Inqueue_Time'][self.last_depart])
+                        area2=(self.Customer['Work_Load'][self.queues[temp1]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp2]] - self.Customer['Inqueue_Time'][self.last_depart])+ (self.Customer['Work_Load'][self.queues[temp3]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp1]] - self.Customer['Inqueue_Time'][self.last_depart])
+                        area3=(self.Customer['Work_Load'][self.queues[temp1]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp3]] - self.Customer['Inqueue_Time'][self.last_depart])+ (self.Customer['Work_Load'][self.queues[temp2]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp1]] - self.Customer['Inqueue_Time'][self.last_depart])
+                        area4=(self.Customer['Work_Load'][self.queues[temp1]]+self.Customer['Work_Load'][self.queues[temp3]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp2]] - self.Customer['Inqueue_Time'][self.last_depart])
+                        area5=(self.Customer['Work_Load'][self.queues[temp2]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp3]] - self.Customer['Inqueue_Time'][self.last_depart])+ (self.Customer['Work_Load'][self.queues[temp1]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp2]] - self.Customer['Inqueue_Time'][self.last_depart])
+                        tempArea=[area1, area2, area3,area4,area5]
+                        tempIndex=tempArea.index(max(tempArea))
+                        if tempIndex==0:
+                            indexFirst=temp1
+                        elif tempIndex==1:
+                            indexFirst=temp2
+                        elif tempIndex==2:
+                            indexFirst=temp3
+                        elif tempIndex==3:
+                            indexFirst=temp2
+                        elif tempIndex==4:
+                            indexFirst=temp3
+            return indexFirst
+
 
 
 
@@ -283,10 +362,11 @@ class QUEUE(object):
         if self.mode == 'LCFS' or self.mode == 'PLCFS':
             return self.queues.pop()
         if self.mode == 'LCFSE':
-            returnvalue = self.queues.pop(self.os(len(self.queues)))
-            for x in self.queues:
-                if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
-                    self.queues.remove(x)
+            returnvalue = self.queues.pop()
+            # for x in self.queues:
+            #     if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
+            #         self.queues.remove(x)
+            self.queues = list(filter(lambda x: x > returnvalue, self.queues))
             return returnvalue
         if self.mode == 'RANDOM':
             return self.queues.pop(random.randint(0, len(self.queues) - 1))
@@ -294,32 +374,28 @@ class QUEUE(object):
             return  self.queues.pop(self.os(len(self.queues)))
         if self.mode=='SJFE':
             returnvalue = self.queues.pop(self.os(len(self.queues)))
-            for x in self.queues:
-                if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
-                    self.queues.remove(x)
+            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
             return returnvalue
         if self.mode=='PSJFE':
             returnvalue= self.queues.pop(self.os(len(self.queues)))
             #print(returnvalue)
-            for x in self.queues:
-                if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
-                    self.queues.remove(x)
+            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
             return  returnvalue
         if self.mode == 'SRPT' or self.mode == 'MSRPT'or self.mode == 'SRPTA':
             return self.queues.pop(self.rs(len(self.queues)))
-        if self.mode=='AoI2' or self.mode=='AoI1':
+        if self.mode=='AoI2P' or self.mode=='AoI2':
             returnvalue = self.queues.pop(self.ageBased2(len(self.queues)))
-            for x in self.queues:
-                if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
-                    self.queues.remove(x)
+            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
+            return returnvalue
+        if  self.mode=='AoI3' or self.mode=='AoI3P':
+            returnvalue = self.queues.pop(self.ageBased3(len(self.queues)))
+            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
             return returnvalue
         if self.mode=='SRPTL':
             return self.queues.pop(self.rs2(len(self.queues)))
         if self.mode=='SRPTE':
             returnvalue= self.queues.pop(self.rs(len(self.queues)))
-            for x in self.queues:
-                if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
-                    self.queues.remove(x)
+            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
             return  returnvalue
         if self.mode == 'PS':
             return self.queues.pop(self.rs(len(self.queues)))
@@ -327,25 +403,19 @@ class QUEUE(object):
             return self.queues.pop(self.ageDroptoSmallest(len(self.queues), currentTime))
         if self.mode=='MPADS2':
             returnvalue= self.queues.pop(self.ageDroptoSmallest(len(self.queues), currentTime))
-            for x in self.queues:
-                if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
-                    self.queues.remove(x)
+            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
             return  returnvalue
         if self.mode=='ADF' or self.mode=='PADF' or self.mode=='MPADF':
             return self.queues.pop(self.ageDropFast(len(self.queues)))
         if self.mode=='MPADF2':
             returnvalue= self.queues.pop(self.ageDropFast(len(self.queues)))
-            for x in self.queues:
-                if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
-                    self.queues.remove(x)
+            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
             return  returnvalue
         if self.mode=='ADM' or self.mode=='PADM' or self.mode=='MPADM':
             return self.queues.pop(self.ageDropMost(len(self.queues)))
         if self.mode=='MPADM2':
             returnvalue= self.queues.pop(self.ageDropMost(len(self.queues)))
-            for x in self.queues:
-                if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
-                    self.queues.remove(x)
+            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
             return  returnvalue
 
 
@@ -356,7 +426,7 @@ class QUEUE(object):
         modes = ['FCFS', 'RANDOM','LCFS','PS','PLCFS','FB','SJF','PSJF','SRPT','ADS]
         '''
         if self.mode in ['FCFS', 'RANDOM', 'LCFS','LCFSE', 'PS', 'PLCFS', 'SJF', 'SJFE','PSJF', 'SRPT','ADS','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2',
-                         'SRPTL','SRPTA','ADF','PADF','MPADF','MPADF2','ADM','PADM','MPADM','MPADM2','AoI2','AoI1']:
+                         'SRPTL','SRPTA','ADF','PADF','MPADF','MPADF2','ADM','PADM','MPADM','MPADM2','AoI2P','AoI2','AoI3','AoI3P']:
             self.queues.append(i)
         else:
             print('Improper queueing mode in queue_append!', self.mode)
@@ -455,6 +525,16 @@ class QUEUE(object):
         self.last_depart = i
         self.i_serving = -1
 
+        # if self.mode=='AoI2P' or self.mode=='AoI2' or self.mode=='AoI3' or self.mode=='AoI3P':
+        #     for x in self.queues:
+        #         if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][self.last_depart]:
+        #             self.queues.remove(x)
+
+
+        # print("departure ID: %s " % self.last_depart)
+        # print("arrival time: %s " % self.Customer['Inqueue_Time'][self.last_depart])
+
+
         return self.Customer['Dequeue_Time'][i]
 
     def serve_between_time(self, t_begin, t_end):
@@ -478,7 +558,7 @@ class QUEUE(object):
             return True
         elif self.mode == 'SRPT' or self.mode == 'MSRPT' or self.mode=='SRPTE' or self.mode=='SRPTL':
             return self.Customer['Remain_Work_Load'][i_new] < self.Customer['Remain_Work_Load'][i_old]
-        elif self.mode == 'SRPTA' or self.mode=='AoI2':
+        elif self.mode == 'SRPTA' or self.mode=='AoI2P' or self.mode=='AoI3P':
             ageAreaofPreemption=(self.Customer['Inqueue_Time'][i_old]-self.largest_inqueue_time)*(self.Customer['Remain_Work_Load'][i_new]-self.Customer['Remain_Work_Load'][i_old])
             ageAreaofNonPreemption=(self.Customer['Inqueue_Time'][i_new]-self.Customer['Inqueue_Time'][i_old])*self.Customer['Remain_Work_Load'][i_old]
             if ageAreaofPreemption<0:
@@ -515,8 +595,9 @@ class QUEUE(object):
         self.queue_append(i_old)
         self.i_serving=i_new
         if self.mode == 'MSRPT'  or  self.mode == 'MPSJF' or  self.mode=='MPADS' or self.mode == 'PSJFE' or self.mode == 'SRPTE' or  \
-                self.mode=='PADSE' or self.mode=='MPADF'  or  self.mode=='MPADF2' or self.mode=='MPADM'  or self.mode=='MPADM2' or self.mode=='AoI2':
+                self.mode=='PADSE' or self.mode=='MPADF'  or  self.mode=='MPADF2' or self.mode=='MPADM'  or self.mode=='MPADM2' or self.mode=='AoI2P' or self.mode=='AoI3P':
             self.queues = []
+
 
 
 

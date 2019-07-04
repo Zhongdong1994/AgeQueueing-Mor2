@@ -19,76 +19,65 @@ def simulate():
     '''
     # arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
-    Nuser = 100000
+    #arrival_rates = [0.95]
+    Nuser =100000
     mu = 1
-    rounds =20
-    #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PADS','MPSJF', 'MSRPT','MPADS']  ###  FB is currently unavailable
-    #modes = ['PSJF', 'SRPT',  'PADS', 'MPSJF', 'MSRPT', 'MPADS','PSJFE','SRPTE', 'MPADS2','PADF','MPADF','MPADF2','ADM','PADM']
-    #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS','SRPTL','ADF','PADF']
-    #modes=['ADS','ADF','ADM','PADS','PADF','PADM','MPADS','MPADF','MPADM2']
-    #modes=['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF','SRPT','SRPT3','MSRPT','SRPTE']
-    # modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF','PSJF', 'MPSJF', 'PSJFE', 'SRPT', 'SRPTA', 'MSRPT', 'SRPTE', 'ADS', 'PADS', 'MPADS', 'MPADS2', 'ADF',
+    rounds = 1
+    # modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PADS','MPSJF', 'MSRPT','MPADS']  ###  FB is currently unavailable
+    # modes = ['PSJF', 'SRPT',  'PADS', 'MPSJF', 'MSRPT', 'MPADS','PSJFE','SRPTE', 'MPADS2','PADF','MPADF','MPADF2','ADM','PADM']
+    # modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS','SRPTL','ADF','PADF']
+    # modes=['ADS','ADF','ADM','PADS','PADF','PADM','MPADS','MPADF','MPADM2']
+    # modes=['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF','SRPT','SRPT3','MSRPT','SRPTE']
+    # modes = ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'MPSJF', 'PSJFE', 'SRPT', 'SRPTA', 'MSRPT',
+    #          'SRPTE', 'ADS', 'PADS', 'MPADS', 'MPADS2', 'ADF',
     #          'PADF', 'MPADF', 'MPADF2', 'ADM', 'PADM', 'MPADM', 'MPADM2']
-    #modes=['SJF','SJFE']
-
-
-    #modes=['SRPT','SRPTE','SRPTA','AoI2']
-    #modes=['LCFS','SJF','AoI1']
-    modes=['LCFSE']
-
+    modes=['AoI2']
 
     '''
     SRPTL policy is very similar to SRPT policy expect that SRPTL chooses the job that has latest arrival time when multiple jobs have the
     same remaining time
-    
+
     MPSJF, MSRPT and MPADS policies are modified version of PSJF, SRPT and PADS. The difference between these modified polices and original 
     policies is: once the preemption happens, those modified policies will drop all outdated jobs. Motivations: Outdated jobs sometimes will block new
     jobs and the AoI/PAoI benefits nothing from serving the outdated jobs.
-    
+
     PSJFE, SRPTE and PADSE will kick out the outdated jobs both when the preemption happens and when normal departure happens. 
-    
-    AoI2 (effective and preemptive policy) means that this policy uses "the power of 2". For preemption, it compares the future AoI 
-    between continuously serving current job and/or   serving new arrival, and making decision to minimize the future AoI. 
-    For departure, it selects two jobs from effective jobs and compute  the future AoI. Making decision to minimize the future AoI. 
-    
-    AoI1 is the non-preemptive of AoI2
-    
+
+
     '''
 
-
     data = np.zeros(1, dtype=np.dtype([('age', float),
-                                                ('peak', float),
-                                                ('len', float),
-                                                ('response', float)]))  ### only used for define data type ---->tempMean
+                                       ('peak', float),
+                                       ('len', float),
+                                       ('response', float)]))
     for i in range(len(arrival_rates)):
         print(arrival_rates[i])
         Mean = compare(Nuser, arrival_rates[i], mu, modes)
-        if i==0:
+        if i == 0:
             Mean2 = Mean  ### Mean2 is to store all data (the data generated in all loops)
         else:
             tempMean = pd.DataFrame(data)
-            tempMean['age']=arrival_rates[i]
+            tempMean['age'] = arrival_rates[i]
             Mean2 = Mean2.append(tempMean)
             Mean2 = Mean2.append(Mean)
 
-
         for j in range(rounds - 1):
-            temp=compare(Nuser, arrival_rates[i], mu, modes)
+            temp = compare(Nuser, arrival_rates[i], mu, modes)
             tempMean = pd.DataFrame(data)
             tempMean['age'] = arrival_rates[i]
-            tempMean['peak'] = j+1
+            tempMean['peak'] = j + 1
             Mean2 = Mean2.append(tempMean)
-            Mean2=Mean2.append(temp)
+            Mean2 = Mean2.append(temp)
             Mean += temp
 
         Mean = Mean.multiply(1 / rounds)
-        if i==0:
+        if i == 0:
             Mean1 = Mean  ### Mean1 is to store all averagered data (is exactly same as the output)
         else:
             tempMean = pd.DataFrame(data)
-            tempMean['age']=arrival_rates[i]
+            tempMean['age'] = arrival_rates[i]
             Mean1 = Mean1.append(tempMean)
-            Mean1=Mean1.append(Mean)
+            Mean1 = Mean1.append(Mean)
         print(Mean)
         # store simulation data in results.h5
         with pd.HDFStore('results.h5') as store:
@@ -124,7 +113,7 @@ def simulate():
         plt.ylabel('average age')
         plt.xlabel('arrival rates')
         plt.legend(modes)
-        ax.set_ylim([0, max([store[str(arrival_rates[i])]['age'][modes[1]] for i in range(len(arrival_rates))]) * 1.1])
+        #ax.set_ylim([0, max([store[str(arrival_rates[i])]['age'][modes[1]] for i in range(len(arrival_rates))]) * 1.1])
         plt.show()
     # peak age
     fig, ax = plt.subplots(figsize=(15, 8))
@@ -136,15 +125,16 @@ def simulate():
         plt.ylabel('average peak age')
         plt.xlabel('arrival rates')
         plt.legend(modes)
-        ax.set_ylim([0, max([store[str(arrival_rates[i])]['peak'][modes[1]] for i in range(len(arrival_rates))]) * 1.1])
+        #ax.set_ylim([0, max([store[str(arrival_rates[i])]['peak'][modes[1]] for i in range(len(arrival_rates))]) * 1.1])
         plt.show()
 
+
 def compare(Nuser=1000, arrival_rate=0.35, mu=1,
-            modes=['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS']):
+            modes=['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT', 'ADS', 'PADS']):
     '''
     compare different scheduling modes
     '''
-    #modes = ['FCFS','RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS']
+    # modes = ['FCFS','RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS']
     data = np.zeros(len(modes), dtype=np.dtype([('age', float),
                                                 ('peak', float),
                                                 ('len', float),
@@ -197,7 +187,6 @@ if __name__ == '__main__':
     #    test()
     total_time = time.time() - start_time
     print('time_cost:%s' % total_time)
-
 
 
 
