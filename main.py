@@ -18,11 +18,13 @@ def simulate():
     run simulation for different arrival rates and plot curves
     '''
     # arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
-    arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
-    #arrival_rates = [0.95]
+    #arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    #arrival_rates = [0.7,0.8,0.9]
+    arrival_rates = [0.8,0.9,0.95,0.99]
     Nuser =100000
     mu = 1
-    rounds = 1
+    rounds = 20
+    #modes=['LCFS','RANDOM','SJF','SRPT','RANDOME','LCFSE','SJFE','PSJFE','SRPTE','ADM','ADS','ADF','ADFE','AoI2','AoI3','AoI2PE','AoI3PE']
     # modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PADS','MPSJF', 'MSRPT','MPADS']  ###  FB is currently unavailable
     # modes = ['PSJF', 'SRPT',  'PADS', 'MPSJF', 'MSRPT', 'MPADS','PSJFE','SRPTE', 'MPADS2','PADF','MPADF','MPADF2','ADM','PADM']
     # modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS','SRPTL','ADF','PADF']
@@ -31,7 +33,16 @@ def simulate():
     # modes = ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'MPSJF', 'PSJFE', 'SRPT', 'SRPTA', 'MSRPT',
     #          'SRPTE', 'ADS', 'PADS', 'MPADS', 'MPADS2', 'ADF',
     #          'PADF', 'MPADF', 'MPADF2', 'ADM', 'PADM', 'MPADM', 'MPADM2']
-    modes=['AoI2']
+    #modes=['PLCFS','LCFSE','SJFE','PSJFE','SRPT','SRPTE','SRPTA','AoI2','AoI2P','AoI2R','AoI2RP','AoI3','AoI3P','AoI3R','AoI3RP']
+    #modes=['SJF','PSJF','SJFE','PSJFE','SRPT','SRPTE','ADF','PADF','ADS','PADS','ADM','PADM','AoI2','AoI2P','AoI3','AoI3P']
+    #modes = [ 'SJF','PSJFE','ADS','PADSE','SRPT', 'SRPTE', 'AoI2','AoI2PE']
+    modes = ['SJF']
+
+    #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT']
+    #modes=['SRPT','LCFS','SJF','ADM','ADS','ADF','AoI2', 'AoI3']
+
+    #modes = [ 'FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','RANDOME', 'LCFSE', 'SJFE', 'PSJFE', 'SRPTE','SRPTA']
+    #modes=['SRPT','SRPTE', 'ADF','PADF','ADS','PADS','ADM','PADM']
 
     '''
     SRPTL policy is very similar to SRPT policy expect that SRPTL chooses the job that has latest arrival time when multiple jobs have the
@@ -42,8 +53,6 @@ def simulate():
     jobs and the AoI/PAoI benefits nothing from serving the outdated jobs.
 
     PSJFE, SRPTE and PADSE will kick out the outdated jobs both when the preemption happens and when normal departure happens. 
-
-
     '''
 
     data = np.zeros(1, dtype=np.dtype([('age', float),
@@ -62,6 +71,7 @@ def simulate():
             Mean2 = Mean2.append(Mean)
 
         for j in range(rounds - 1):
+            #print("rounds ID:", j)
             temp = compare(Nuser, arrival_rates[i], mu, modes)
             tempMean = pd.DataFrame(data)
             tempMean['age'] = arrival_rates[i]

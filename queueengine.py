@@ -36,7 +36,7 @@ class QUEUE(object):
         self.mu = mu
         self.mode = mode
         self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2','SRPTL','SRPTA',
-                                        'PADF','MPADF','MPADF2','PADM','MPADM','MPADM2','AoI2P','AoI3P']
+                                        'PADF','MPADF','MPADF2','PADM','MPADM','MPADM2','AoI2PE','AoI3PE','AoI2RP','AoI3RP','PADFE','PADSE']
         self.i_depart = np.zeros(self.num_user_type, dtype=int)
         self.largest_inqueue_time=0  ### largest inqueue time among all departed jobs
         # self.i_depart_effective = np.zeros(self.num_user_type, dtype=int)
@@ -73,7 +73,7 @@ class QUEUE(object):
 
     def reset(self):
         self.preemptive = self.mode in ['PLCFS', 'PSJF', 'SRPT','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2','SRPTL','SRPTA',
-                                        'PADF','MPADF','MPADF2','PADM','MPADM','MPADM2','AoI2P','AoI3P']
+                                        'PADF','MPADF','MPADF2','PADM','MPADM','MPADM2','AoI2PE','AoI3PE','AoI2RP','AoI3RP','PADFE','PADSE']
         self.i_depart = np.zeros(self.num_user_type, dtype=int)
         # self.i_depart_effective = np.zeros(self.num_user_type, dtype=int)
         self.last_depart = -1  # by default no customer departs
@@ -113,13 +113,24 @@ class QUEUE(object):
         '''
         return arrival intervals with arrival_rate and index each customer's priority
         '''
+
         self.Customer['Arrival_Intv'] = np.random.exponential(1 / self.arrival_rate, size=self.Nuser)
         # self.Customer['Priority'] = np.random.choice(self.num_user_type, size=self.Nuser, p=self.user_prob)
         # print(self.Customer['Priority'])
 
 
         self.Customer['Work_Load'] = np.random.exponential(1 / self.mu, size=self.Nuser)
-        #self.Customer['Work_Load'] = 0.29752*np.random.weibull(0.39837, size=self.Nuser)
+        #self.Customer['Work_Load'] = 0.29752*np.random.weibull(0.39837, size=self.Nuser)  #  mean=1, csqr=10
+        #self.Customer['Work_Load'] = 0.324414* np.random.weibull(0.41134, size=self.Nuser)  # mean=1, csqr=9
+        #self.Customer['Work_Load'] = 0.356264 * np.random.weibull(0.426775, size=self.Nuser)  # mean=1, csqr=8
+        #self.Customer['Work_Load'] = 0.394549 * np.random.weibull(0.445573, size=self.Nuser)  # mean=1, csqr=7
+        #self.Customer['Work_Load'] = 0.441402 * np.random.weibull(0.469165, size=self.Nuser)  # mean=1, csqr=6
+        #self.Customer['Work_Load'] = 0.5 * np.random.weibull(0.5, size=self.Nuser)  # mean=1, csqr=5
+        #self.Customer['Work_Load'] = 0.57525 * np.random.weibull(0.542693, size=self.Nuser)  # mean=1, csqr=4
+        #self.Customer['Work_Load'] = 0.674996 * np.random.weibull(0.607248, size=self.Nuser)  # mean=1, csqr=3
+        #self.Customer['Work_Load'] = 0.811794 * np.random.weibull(0.720905, size=self.Nuser)  # mean=1, csqr=2
+        #self.Customer['Work_Load'] = 1 * np.random.weibull(1, size=self.Nuser)  # mean=1, csqr=1
+
         #self.Customer['Work_Load'] =  np.random.uniform(0,2, size=self.Nuser)
         #self.Customer['Work_Load']=0.9*np.ones(self.Nuser)
 
@@ -168,20 +179,39 @@ class QUEUE(object):
         return minimum
 
     def rs2(self, temp=1):  ### return the index of a job  which has the  minimum remaining work load in the queue, LCFS if two jobs have the same minimum remaining work load
-        minimum = temp-1
+        minimum = 0 #temp-1
         for x in range(temp):
-            if self.Customer['Remain_Work_Load'][self.queues[temp-1-x]] < self.Customer['Remain_Work_Load'][
+            if self.Customer['Remain_Work_Load'][self.queues[x]] < self.Customer['Remain_Work_Load'][
                 self.queues[minimum]]:
-                minimum = temp-1-x
+                minimum =x
+            # if self.Customer['Remain_Work_Load'][self.queues[temp-1-x]] < self.Customer['Remain_Work_Load'][
+            #     self.queues[minimum]]:
+            #     minimum = temp-1-x
         return minimum
 
     def ageDroptoSmallest(self,temp=1,currentTime=0):
-        minimum = 0
+        # minimum = 0
+        # for x in range(temp):
+        #     if currentTime+self.Customer['Remain_Work_Load'][self.queues[x]]-max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][self.queues[x]]) < \
+        #             currentTime+self.Customer['Remain_Work_Load'][self.queues[minimum]]-max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][self.queues[minimum]]):
+        #         minimum = x
+        # return minimum
+        jobsMakeAgeDrop = []
+        jobsNotMakeAgeDrop = []
         for x in range(temp):
-            if currentTime+self.Customer['Remain_Work_Load'][self.queues[x]]-max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][self.queues[x]]) < \
-                    currentTime+self.Customer['Remain_Work_Load'][self.queues[minimum]]-max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][self.queues[minimum]]):
-                minimum = x
-        return minimum
+            if self.Customer['Inqueue_Time'][self.queues[x]] > self.largest_inqueue_time:
+                jobsMakeAgeDrop.append(self.queues[x])
+            else:
+                jobsNotMakeAgeDrop.append(self.queues[x])
+        if len(jobsMakeAgeDrop) == 0:
+            return self.rs(len(self.queues))
+        else:
+            minimum = jobsMakeAgeDrop[0]
+            for x in jobsMakeAgeDrop:
+                if currentTime+self.Customer['Remain_Work_Load'][x]-self.Customer['Inqueue_Time'][x] < \
+                     currentTime+self.Customer['Remain_Work_Load'][minimum]-self.Customer['Inqueue_Time'][minimum]:
+                    minimum = x
+            return self.queues.index(minimum)
 
     def ageDropFast(self,temp=1):
         jobsMakeAgeDrop=[]
@@ -235,8 +265,8 @@ class QUEUE(object):
                             self.Customer['Inqueue_Time'][self.queues[x]] - self.Customer['Inqueue_Time'][self.last_depart])
                     area2 = self.Customer['Work_Load'][self.queues[x]] * (
                             self.Customer['Inqueue_Time'][self.queues[y]] - self.Customer['Inqueue_Time'][self.last_depart])
-                    if area1<0 or area2<0:
-                        print(1)
+                    # if area1<0 or area2<0:
+                    #     print(1)
                     if area < area1:
                         area = area1
                         indexFirst = x
@@ -253,34 +283,102 @@ class QUEUE(object):
         if temp==1:
             return 0
         else:
-            area = 0
+            area = 10000  #must be very large
             indexFirst = 0
-            for x in self.queues:
-                if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][self.last_depart]:
-                    self.queues.remove(x)
-
             temp = len(self.queues)
             for x in range(temp - 1):
                 for y in range(x+1, temp):
-                    totalarea=np.square(self.Customer['Work_Load'][self.queues[x]]+self.Customer['Work_Load'][self.queues[y]])/2+\
-                          (self.Customer['Work_Load'][self.queues[x]]+self.Customer['Work_Load'][self.queues[y]])*self.Customer['Response_Time'][self.last_depart]
+                    totalWorkLoad=self.Customer['Work_Load'][self.queues[x]]+self.Customer['Work_Load'][self.queues[y]]
+                    totalarea=np.square(totalWorkLoad)/2+ totalWorkLoad*self.Customer['Response_Time'][self.last_depart]
 
                     area1 = self.Customer['Work_Load'][self.queues[y]] * (
                             self.Customer['Inqueue_Time'][self.queues[x]] - self.Customer['Inqueue_Time'][self.last_depart])
-                    area1=totalarea-area1
+                    area1=(totalarea-area1)/totalWorkLoad
                     area2 = self.Customer['Work_Load'][self.queues[x]] * (
                             self.Customer['Inqueue_Time'][self.queues[y]] - self.Customer['Inqueue_Time'][self.last_depart])
-                    area2=totalarea-area2
-
+                    area2=(totalarea-area2)/totalWorkLoad
+                    #area2=self.Customer['Work_Load'][self.queues[y]]/2+self.Customer['Response_Time'][self.last_depart]  #average area
+                    # if area1<0 or area2<0:
+                    #     print(1)
                     if area > area1:
                         area = area1
                         indexFirst = x
-                        # indexSecond=y+1
                     if area > area2:
                         area = area2
                         indexFirst = y
-                        # indexSecond=x
             return indexFirst
+
+
+
+    def ageBased2_3(self,temp=1):  #compute the exact age
+        if temp==1:
+            return 0
+        else:
+            area = 10000  #must be very large
+            indexFirst = 0
+            temp = len(self.queues)
+            for x in range(temp - 1):
+                for y in range(x+1, temp):
+                    totalWorkLoad=self.Customer['Work_Load'][self.queues[x]]+self.Customer['Work_Load'][self.queues[y]]
+                    totalarea=np.square(totalWorkLoad)/2+ totalWorkLoad*self.Customer['Response_Time'][self.last_depart]
+
+                    if self.Customer['Inqueue_Time'][self.queues[y]] < self.Customer['Inqueue_Time'][self.last_depart]: #all selected two are outdated
+                        if area>totalarea/totalWorkLoad:
+                            area=totalarea/totalWorkLoad
+                            if self.Customer['Work_Load'][self.queues[x]]<self.Customer['Work_Load'][self.queues[y]]:
+                                indexFirst=x
+                            else:
+                                indexFirst=y
+                    elif self.Customer['Inqueue_Time'][self.queues[x]] < self.Customer['Inqueue_Time'][self.last_depart]: #only one is outdated
+                        area2=self.Customer['Work_Load'][self.queues[x]] * (
+                             self.Customer['Inqueue_Time'][self.queues[y]] - self.Customer['Inqueue_Time'][self.last_depart])
+                        area2 = (totalarea - area2) / totalWorkLoad
+                        if area>area2:
+                            area=area2
+                            indexFirst=y
+                    else: #all selected two are informative
+                        area1 = self.Customer['Work_Load'][self.queues[y]] * (
+                                self.Customer['Inqueue_Time'][self.queues[x]] - self.Customer['Inqueue_Time'][
+                            self.last_depart])
+                        area1 = (totalarea - area1) / totalWorkLoad
+                        area2 = self.Customer['Work_Load'][self.queues[x]] * (
+                                self.Customer['Inqueue_Time'][self.queues[y]] - self.Customer['Inqueue_Time'][
+                            self.last_depart])
+                        area2 = (totalarea - area2) / totalWorkLoad
+                        if area > area1:
+                            area = area1
+                            indexFirst = x
+                        if area > area2:
+                            area = area2
+                            indexFirst = y
+            return indexFirst
+
+                    # area1 = self.Customer['Work_Load'][self.queues[y]] * (
+                    #         self.Customer['Inqueue_Time'][self.queues[x]] - self.Customer['Inqueue_Time'][self.last_depart])
+                    # if area1<0:
+                    #     area1=totalarea/totalWorkLoad
+                    # else:
+                    #     area1=(totalarea-area1)/totalWorkLoad
+                    #
+                    # area2 = self.Customer['Work_Load'][self.queues[x]] * (
+                    #         self.Customer['Inqueue_Time'][self.queues[y]] - self.Customer['Inqueue_Time'][self.last_depart])
+                    # if area2<0:
+                    #     area2=totalarea/totalWorkLoad
+                    # else:
+                    #     area2=(totalarea-area2)/totalWorkLoad
+                    # if area > area1:
+                    #     area = area1
+                    #     if area1==area2:
+                    #         if self.Customer['Work_Load'][self.queues[x]]<self.Customer['Work_Load'][self.queues[y]]:
+                    #             indexFirst = x
+                    #         else:
+                    #             indexFirst = y
+                    #     else:
+                    #         indexFirst = x
+                    # if area > area2:
+                    #     area = area2
+                    #     indexFirst = y
+            #return indexFirst
 
 
 
@@ -296,32 +394,9 @@ class QUEUE(object):
             for x in range(temp - 2):
                 for y in range(x+1, temp-1):
                     for z in range(y+1,temp):
-                        if self.Customer['Inqueue_Time'][self.queues[x]]>self.Customer['Inqueue_Time'][self.queues[y]]:
-                            if self.Customer['Inqueue_Time'][self.queues[x]]>self.Customer['Inqueue_Time'][self.queues[z]]:
-                                if self.Customer['Inqueue_Time'][self.queues[y]]>self.Customer['Inqueue_Time'][self.queues[z]]:
-                                    temp1=x
-                                    temp2=y
-                                    temp3=z
-                                else:
-                                    temp1=x
-                                    temp2=z
-                                    temp3=y
-                            else:
-                                temp1=z
-                                temp2=x
-                                temp3=y
-                        else:
-                            if self.Customer['Inqueue_Time'][self.queues[z]]>self.Customer['Inqueue_Time'][self.queues[y]]:
-                                temp1 = z
-                                temp2 = y
-                                temp3 = x
-                            else:
-                                if self.Customer['Inqueue_Time'][self.queues[x]]>self.Customer['Inqueue_Time'][self.queues[z]]:
-                                    temp1 = y, temp2 = x, temp3 = z
-                                else:
-                                    temp1 = y
-                                    temp2 = z
-                                    temp3 = x
+                        temp1 = z  #has the largest arrival time
+                        temp2 = y
+                        temp3 = x  #has the smallest arrival time
                         area1=(self.Customer['Work_Load'][self.queues[temp2]]+self.Customer['Work_Load'][self.queues[temp3]]) * (
                             self.Customer['Inqueue_Time'][self.queues[temp1]] - self.Customer['Inqueue_Time'][self.last_depart])
                         area2=(self.Customer['Work_Load'][self.queues[temp1]]) * (
@@ -335,18 +410,219 @@ class QUEUE(object):
                         area5=(self.Customer['Work_Load'][self.queues[temp2]]) * (
                             self.Customer['Inqueue_Time'][self.queues[temp3]] - self.Customer['Inqueue_Time'][self.last_depart])+ (self.Customer['Work_Load'][self.queues[temp1]]) * (
                             self.Customer['Inqueue_Time'][self.queues[temp2]] - self.Customer['Inqueue_Time'][self.last_depart])
-                        tempArea=[area1, area2, area3,area4,area5]
-                        tempIndex=tempArea.index(max(tempArea))
-                        if tempIndex==0:
+                        # tempArea=[area1, area2, area3,area4,area5]
+                        # tempIndex=tempArea.index(max(tempArea))
+                        if area<area1:
+                            area = area1
                             indexFirst=temp1
-                        elif tempIndex==1:
+                        if area<area2:
+                            area = area2
                             indexFirst=temp2
-                        elif tempIndex==2:
+                        if area<area3:
+                            area = area3
                             indexFirst=temp3
-                        elif tempIndex==3:
+                        if area<area4:
+                            area = area4
                             indexFirst=temp2
-                        elif tempIndex==4:
+                        if area<area5:
+                            area = area5
                             indexFirst=temp3
+            return indexFirst
+
+
+
+    def ageBased3_3(self,temp=1):
+        if temp==1:
+            return 0
+        elif temp==2:
+            return  self.ageBased2_2(len(self.queues))  #compute the exact age
+        else:
+            area = 10000
+            indexFirst = 0
+            for x in range(temp - 2):
+                for y in range(x+1, temp-1):
+                    for z in range(y+1,temp):
+                        temp1 = z  #has the largest arrival time
+                        temp2 = y
+                        temp3 = x  #has the smallest arrival time
+                        totalWorkload=self.Customer['Work_Load'][self.queues[temp1]]+self.Customer['Work_Load'][self.queues[temp2]]+\
+                                      self.Customer['Work_Load'][self.queues[temp3]]
+                        totalarea=totalWorkload*(self.Customer['Response_Time'][self.last_depart]+totalWorkload)-np.square(totalWorkload)/2
+                        area1=(self.Customer['Work_Load'][self.queues[temp2]]+self.Customer['Work_Load'][self.queues[temp3]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp1]] - self.Customer['Inqueue_Time'][self.last_depart])
+                        area1=(totalarea-area1)/totalWorkload
+                        #area1=self.Customer['Work_Load'][self.queues[temp1]]/2+self.Customer['Response_Time'][self.last_depart]  #average area
+                        area2=(self.Customer['Work_Load'][self.queues[temp1]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp2]] - self.Customer['Inqueue_Time'][self.last_depart])+ (self.Customer['Work_Load'][self.queues[temp3]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp1]] - self.Customer['Inqueue_Time'][self.last_depart])
+                        area2 = (totalarea - area2) / totalWorkload
+                        # totalWorkload2=self.Customer['Work_Load'][self.queues[temp1]]+self.Customer['Work_Load'][self.queues[temp2]]
+                        # totolarea2=totalWorkload2*(self.Customer['Response_Time'][self.last_depart]+totalWorkload2)-np.square(totalWorkload2)/2
+                        # area2=(self.Customer['Work_Load'][self.queues[temp1]]) * (self.Customer['Inqueue_Time'][self.queues[temp2]] - self.Customer['Inqueue_Time'][self.last_depart])
+                        # area2=(totolarea2-area2)/totalWorkload2
+                        area3=(self.Customer['Work_Load'][self.queues[temp1]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp3]] - self.Customer['Inqueue_Time'][self.last_depart])+ (self.Customer['Work_Load'][self.queues[temp2]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp1]] - self.Customer['Inqueue_Time'][self.last_depart])
+                        area3 = (totalarea - area3) / totalWorkload
+                        # totalWorkload3 = self.Customer['Work_Load'][self.queues[temp1]] + self.Customer['Work_Load'][self.queues[temp3]]
+                        # totolarea3 = totalWorkload3 * (self.Customer['Response_Time'][self.last_depart] + totalWorkload3) - np.square(totalWorkload3) / 2
+                        # area3 = (self.Customer['Work_Load'][self.queues[temp1]]) * (self.Customer['Inqueue_Time'][self.queues[temp3]] - self.Customer['Inqueue_Time'][self.last_depart])
+                        # area3 = (totolarea3 - area3) / totalWorkload3
+                        area4=(self.Customer['Work_Load'][self.queues[temp1]]+self.Customer['Work_Load'][self.queues[temp3]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp2]] - self.Customer['Inqueue_Time'][self.last_depart])
+                        area4 = (totalarea - area4) / totalWorkload
+                        area5=(self.Customer['Work_Load'][self.queues[temp2]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp3]] - self.Customer['Inqueue_Time'][self.last_depart])+ (self.Customer['Work_Load'][self.queues[temp1]]) * (
+                            self.Customer['Inqueue_Time'][self.queues[temp2]] - self.Customer['Inqueue_Time'][self.last_depart])
+                        area5 = (totalarea - area5) / totalWorkload
+
+                        if area > area1:
+                            area = area1
+                            indexFirst = temp1
+                        if area > area2:
+                            area = area2
+                            indexFirst = temp2
+                        if area > area3:
+                            area = area3
+                            indexFirst = temp3
+                        if area > area4:
+                            area = area4
+                            indexFirst = temp2
+                        if area > area5:
+                            area = area5
+                            indexFirst = temp3
+            return indexFirst
+
+
+    def ageBased3_4(self,temp=1):
+        if temp==1:
+            return 0
+        elif temp==2:
+            return  self.ageBased2_3(len(self.queues))  #compute the exact age
+        else:
+            area = 10000
+            indexFirst = 0
+            for x in range(temp - 2):
+                for y in range(x+1, temp-1):
+                    for z in range(y+1,temp):
+                        temp1 = z  #has the largest arrival time
+                        temp2 = y
+                        temp3 = x  #has the smallest arrival time
+                        totalWorkload=self.Customer['Work_Load'][self.queues[temp1]]+self.Customer['Work_Load'][self.queues[temp2]]+\
+                                      self.Customer['Work_Load'][self.queues[temp3]]
+                        totalarea=totalWorkload*(self.Customer['Response_Time'][self.last_depart]+totalWorkload)-np.square(totalWorkload)/2
+
+                        if self.Customer['Inqueue_Time'][self.queues[temp1]] < self.Customer['Inqueue_Time'][self.last_depart]: #all selected three are outdated
+                            if area > totalarea / totalWorkload:
+                                area = totalarea / totalWorkload
+                                smallestArea=self.Customer['Work_Load'][self.queues[temp1]]
+                                recorder=temp1
+                                if smallestArea>self.Customer['Work_Load'][self.queues[temp2]]:
+                                    smallestArea=self.Customer['Work_Load'][self.queues[temp2]]
+                                    recorder=temp2
+                                    if smallestArea>self.Customer['Work_Load'][self.queues[temp3]]:
+                                        #smallestArea = self.Customer['Work_Load'][self.queues[temp3]]
+                                        recorder = temp3
+                                else:
+                                    if smallestArea>self.Customer['Work_Load'][self.queues[temp3]]:
+                                        #smallestArea = self.Customer['Work_Load'][self.queues[temp3]]
+                                        recorder = temp3
+                                indexFirst=recorder
+                        elif self.Customer['Inqueue_Time'][self.queues[temp2]] < self.Customer['Inqueue_Time'][self.last_depart]: # selected two are outdated
+                            area1 = (self.Customer['Work_Load'][self.queues[temp2]] + self.Customer['Work_Load'][
+                                self.queues[temp3]]) * (
+                                            self.Customer['Inqueue_Time'][self.queues[temp1]] -
+                                            self.Customer['Inqueue_Time'][self.last_depart])
+                            area1 = (totalarea - area1) / totalWorkload
+                            if area > area1:
+                                area = area1
+                                indexFirst=temp1
+                        elif self.Customer['Inqueue_Time'][self.queues[temp3]] < self.Customer['Inqueue_Time'][self.last_depart]: # selected one are outdated
+                            area1 = (self.Customer['Work_Load'][self.queues[temp2]] + self.Customer['Work_Load'][
+                                self.queues[temp3]]) * (
+                                            self.Customer['Inqueue_Time'][self.queues[temp1]] -
+                                            self.Customer['Inqueue_Time'][self.last_depart])
+                            area1 = (totalarea - area1) / totalWorkload
+                            area2 = (self.Customer['Work_Load'][self.queues[temp1]]) * (
+                                    self.Customer['Inqueue_Time'][self.queues[temp2]] - self.Customer['Inqueue_Time'][
+                                self.last_depart]) + (self.Customer['Work_Load'][self.queues[temp3]]) * (
+                                            self.Customer['Inqueue_Time'][self.queues[temp1]] -
+                                            self.Customer['Inqueue_Time'][self.last_depart])
+                            area2 = (totalarea - area2) / totalWorkload
+                            area3 =  (self.Customer['Work_Load'][self.queues[temp2]]) * (
+                                            self.Customer['Inqueue_Time'][self.queues[temp1]] -
+                                            self.Customer['Inqueue_Time'][self.last_depart])
+                            area3 = (totalarea - area3) / totalWorkload
+                            area4 = (self.Customer['Work_Load'][self.queues[temp1]] + self.Customer['Work_Load'][
+                                self.queues[temp3]]) * (
+                                            self.Customer['Inqueue_Time'][self.queues[temp2]] -
+                                            self.Customer['Inqueue_Time'][self.last_depart])
+                            area4 = (totalarea - area4) / totalWorkload
+                            area5 =  (self.Customer['Work_Load'][self.queues[temp1]]) * (
+                                            self.Customer['Inqueue_Time'][self.queues[temp2]] -
+                                            self.Customer['Inqueue_Time'][self.last_depart])
+                            area5 = (totalarea - area5) / totalWorkload
+
+                            if area > area1:
+                                area = area1
+                                indexFirst = temp1
+                            if area > area2:
+                                area = area2
+                                indexFirst = temp2
+                            if area > area3:
+                                area = area3
+                                indexFirst = temp3
+                            if area > area4:
+                                area = area4
+                                indexFirst = temp2
+                            if area > area5:
+                                area = area5
+                                indexFirst = temp3
+                        else:     # selected no one is outdated
+                            area1 = (self.Customer['Work_Load'][self.queues[temp2]] + self.Customer['Work_Load'][
+                                self.queues[temp3]]) * (
+                                            self.Customer['Inqueue_Time'][self.queues[temp1]] -
+                                            self.Customer['Inqueue_Time'][self.last_depart])
+                            area1 = (totalarea - area1) / totalWorkload
+                            area2 = (self.Customer['Work_Load'][self.queues[temp1]]) * (
+                                    self.Customer['Inqueue_Time'][self.queues[temp2]] - self.Customer['Inqueue_Time'][
+                                self.last_depart]) + (self.Customer['Work_Load'][self.queues[temp3]]) * (
+                                            self.Customer['Inqueue_Time'][self.queues[temp1]] -
+                                            self.Customer['Inqueue_Time'][self.last_depart])
+                            area2 = (totalarea - area2) / totalWorkload
+                            area3 = (self.Customer['Work_Load'][self.queues[temp1]]) * (
+                                    self.Customer['Inqueue_Time'][self.queues[temp3]] - self.Customer['Inqueue_Time'][
+                                self.last_depart]) + (self.Customer['Work_Load'][self.queues[temp2]]) * (
+                                            self.Customer['Inqueue_Time'][self.queues[temp1]] -
+                                            self.Customer['Inqueue_Time'][self.last_depart])
+                            area3 = (totalarea - area3) / totalWorkload
+                            area4 = (self.Customer['Work_Load'][self.queues[temp1]] + self.Customer['Work_Load'][
+                                self.queues[temp3]]) * (
+                                            self.Customer['Inqueue_Time'][self.queues[temp2]] -
+                                            self.Customer['Inqueue_Time'][self.last_depart])
+                            area4 = (totalarea - area4) / totalWorkload
+                            area5 = (self.Customer['Work_Load'][self.queues[temp2]]) * (
+                                    self.Customer['Inqueue_Time'][self.queues[temp3]] - self.Customer['Inqueue_Time'][
+                                self.last_depart]) + (self.Customer['Work_Load'][self.queues[temp1]]) * (
+                                            self.Customer['Inqueue_Time'][self.queues[temp2]] -
+                                            self.Customer['Inqueue_Time'][self.last_depart])
+                            area5 = (totalarea - area5) / totalWorkload
+
+                            if area > area1:
+                                area = area1
+                                indexFirst = temp1
+                            if area > area2:
+                                area = area2
+                                indexFirst = temp2
+                            if area > area3:
+                                area = area3
+                                indexFirst = temp3
+                            if area > area4:
+                                area = area4
+                                indexFirst = temp2
+                            if area > area5:
+                                area = area5
+                                indexFirst = temp3
             return indexFirst
 
 
@@ -370,6 +646,10 @@ class QUEUE(object):
             return returnvalue
         if self.mode == 'RANDOM':
             return self.queues.pop(random.randint(0, len(self.queues) - 1))
+        if self.mode == 'RANDOME':
+            returnvalue = self.queues.pop(random.randint(0, len(self.queues) - 1))
+            self.queues = list(filter(lambda x: x > returnvalue, self.queues))
+            return returnvalue
         if self.mode == 'SJF' or self.mode == 'PSJF' or self.mode == 'MPSJF':
             return  self.queues.pop(self.os(len(self.queues)))
         if self.mode=='SJFE':
@@ -383,11 +663,25 @@ class QUEUE(object):
             return  returnvalue
         if self.mode == 'SRPT' or self.mode == 'MSRPT'or self.mode == 'SRPTA':
             return self.queues.pop(self.rs(len(self.queues)))
-        if self.mode=='AoI2P' or self.mode=='AoI2':
+        if self.mode=='AoI2PE' or self.mode=='AoI2E':
+            returnvalue = self.queues.pop(self.ageBased2_2(len(self.queues)))
+            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
+            return returnvalue
+        if self.mode=='AoI2':
+            returnvalue = self.queues.pop(self.ageBased2_3(len(self.queues)))
+            return returnvalue
+        if self.mode=='AoI3':
+            returnvalue = self.queues.pop(self.ageBased3_4(len(self.queues)))
+            return returnvalue
+        if self.mode=='AoI2RP' or self.mode=='AoI2R':
             returnvalue = self.queues.pop(self.ageBased2(len(self.queues)))
             self.queues=list(filter(lambda x: x>returnvalue,self.queues))
             return returnvalue
-        if  self.mode=='AoI3' or self.mode=='AoI3P':
+        if  self.mode=='AoI3E' or self.mode=='AoI3PE':
+            returnvalue = self.queues.pop(self.ageBased3_3(len(self.queues)))
+            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
+            return returnvalue
+        if  self.mode=='AoI3R' or self.mode=='AoI3RP':
             returnvalue = self.queues.pop(self.ageBased3(len(self.queues)))
             self.queues=list(filter(lambda x: x>returnvalue,self.queues))
             return returnvalue
@@ -401,12 +695,20 @@ class QUEUE(object):
             return self.queues.pop(self.rs(len(self.queues)))
         if self.mode == 'ADS' or self.mode == 'PADS' or self.mode == 'MPADS' :
             return self.queues.pop(self.ageDroptoSmallest(len(self.queues), currentTime))
+        if self.mode=='ADSE' or self.mode=='PADSE':
+            returnvalue= self.queues.pop(self.ageDroptoSmallest(len(self.queues)))
+            self.queues = list(filter(lambda x: x > returnvalue, self.queues))
+            return returnvalue
         if self.mode=='MPADS2':
             returnvalue= self.queues.pop(self.ageDroptoSmallest(len(self.queues), currentTime))
             self.queues=list(filter(lambda x: x>returnvalue,self.queues))
             return  returnvalue
         if self.mode=='ADF' or self.mode=='PADF' or self.mode=='MPADF':
             return self.queues.pop(self.ageDropFast(len(self.queues)))
+        if self.mode=='ADFE' or self.mode=='PADFE':
+            returnvalue= self.queues.pop(self.ageDropFast(len(self.queues)))
+            self.queues = list(filter(lambda x: x > returnvalue, self.queues))
+            return returnvalue
         if self.mode=='MPADF2':
             returnvalue= self.queues.pop(self.ageDropFast(len(self.queues)))
             self.queues=list(filter(lambda x: x>returnvalue,self.queues))
@@ -425,8 +727,9 @@ class QUEUE(object):
         append one customer. Left ones goes out first, and right ones goes last
         modes = ['FCFS', 'RANDOM','LCFS','PS','PLCFS','FB','SJF','PSJF','SRPT','ADS]
         '''
-        if self.mode in ['FCFS', 'RANDOM', 'LCFS','LCFSE', 'PS', 'PLCFS', 'SJF', 'SJFE','PSJF', 'SRPT','ADS','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2',
-                         'SRPTL','SRPTA','ADF','PADF','MPADF','MPADF2','ADM','PADM','MPADM','MPADM2','AoI2P','AoI2','AoI3','AoI3P']:
+        if self.mode in ['FCFS', 'RANDOM','RANDOME', 'LCFS','LCFSE', 'PS', 'PLCFS', 'SJF', 'SJFE','PSJF', 'SRPT','ADS','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2',
+                         'SRPTL','SRPTA','ADF','PADF','MPADF','MPADF2','ADM','PADM','MPADM','MPADM2','AoI2PE','AoI2E','AoI3E','AoI3PE','AoI2RP','AoI2R','AoI3R','AoI3RP','ADFE',
+                         'PADFE','AoI2','AoI3','PADSE']:
             self.queues.append(i)
         else:
             print('Improper queueing mode in queue_append!', self.mode)
@@ -525,7 +828,7 @@ class QUEUE(object):
         self.last_depart = i
         self.i_serving = -1
 
-        # if self.mode=='AoI2P' or self.mode=='AoI2' or self.mode=='AoI3' or self.mode=='AoI3P':
+        # if self.mode=='AoI2PE' or self.mode=='AoI2E' or self.mode=='AoI3E' or self.mode=='AoI3PE':
         #     for x in self.queues:
         #         if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][self.last_depart]:
         #             self.queues.remove(x)
@@ -558,20 +861,26 @@ class QUEUE(object):
             return True
         elif self.mode == 'SRPT' or self.mode == 'MSRPT' or self.mode=='SRPTE' or self.mode=='SRPTL':
             return self.Customer['Remain_Work_Load'][i_new] < self.Customer['Remain_Work_Load'][i_old]
-        elif self.mode == 'SRPTA' or self.mode=='AoI2P' or self.mode=='AoI3P':
+        elif self.mode == 'SRPTA' or self.mode=='AoI2PE' or self.mode=='AoI3PE' or self.mode=='AoI2RP' or self.mode=='AoI3RP':
             ageAreaofPreemption=(self.Customer['Inqueue_Time'][i_old]-self.largest_inqueue_time)*(self.Customer['Remain_Work_Load'][i_new]-self.Customer['Remain_Work_Load'][i_old])
             ageAreaofNonPreemption=(self.Customer['Inqueue_Time'][i_new]-self.Customer['Inqueue_Time'][i_old])*self.Customer['Remain_Work_Load'][i_old]
             if ageAreaofPreemption<0:
                 return True
             else:
                 return ageAreaofPreemption < ageAreaofNonPreemption
+            # area1=np.square(self.Customer['Remain_Work_Load'][i_old])/2+self.Customer['Remain_Work_Load'][i_old]*self.Customer['Age_Arvl'][i_new]+ \
+            #       np.square(self.Customer['Work_Load'][i_new]) / 2 + self.Customer['Work_Load'][i_new] * \
+            #       (self.Customer['Inqueue_Time'][i_new]-self.Customer['Inqueue_Time'][i_old]+self.Customer['Remain_Work_Load'][i_old])
+            # area1=area1/(self.Customer['Remain_Work_Load'][i_old]+self.Customer['Work_Load'][i_new])
+            # area2=self.Customer['Work_Load'][i_new] / 2 + self.Customer['Age_Arvl'][i_new]
+            # return area2<area1
         elif self.mode == 'PSJF' or self.mode == 'MPSJF' or self.mode == 'PSJFE':
             return self.Customer['Work_Load'][i_new] < self.Customer['Work_Load'][i_old]
         elif self.mode=='PADS' or self.mode=='MPADS' or self.mode=='PADSE':
              check= self.Customer['Remain_Work_Load'][i_new] - max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][i_new])< \
                     self.Customer['Remain_Work_Load'][i_old] - max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][i_old])
              return check
-        elif self.mode=='PADF'or self.mode=='MPADF' or self.mode=='MPADF2':
+        elif self.mode=='PADF'or self.mode=='MPADF' or self.mode=='MPADF2' or self.mode=='PADFE':
             if self.Customer['Inqueue_Time'][i_old] < self.largest_inqueue_time:
                 return True
             else:
@@ -594,8 +903,10 @@ class QUEUE(object):
         '''
         self.queue_append(i_old)
         self.i_serving=i_new
-        if self.mode == 'MSRPT'  or  self.mode == 'MPSJF' or  self.mode=='MPADS' or self.mode == 'PSJFE' or self.mode == 'SRPTE' or  \
-                self.mode=='PADSE' or self.mode=='MPADF'  or  self.mode=='MPADF2' or self.mode=='MPADM'  or self.mode=='MPADM2' or self.mode=='AoI2P' or self.mode=='AoI3P':
+        # if self.mode == 'MSRPT'  or  self.mode == 'MPSJF' or  self.mode=='MPADS' or self.mode == 'PSJFE' or self.mode == 'SRPTE' or  \
+        #         self.mode=='PADSE' or self.mode=='MPADF'  or  self.mode=='MPADF2' or self.mode=='MPADM'  or self.mode=='MPADM2' or self.mode=='AoI2PE' or self.mode=='AoI3PE':
+        #     self.queues = []
+        if self.mode in ['MSRPT','MPSJF','MPADS','PSJFE','SRPTE','PADSE','MPADF','MPADF2','MPADM','MPADM2','AoI2PE','AoI3PE','AoI2RP','AoI3RP','PADFE','PADSE']:
             self.queues = []
 
 
@@ -611,6 +922,7 @@ class QUEUE(object):
 
         while idx_a < self.Nuser - 1:
             idx_a += 1
+
 
             # if self.mode=='FB':  working on...
             #     self.conqueue=[]
@@ -674,8 +986,7 @@ class QUEUE(object):
         return total_page / len(self.effe_queues)
 
     def mean_response_time(self):
-        if self.mode == 'MSRPT' or  self.mode == 'MPSJF' or  self.mode=='MPADS' or self.mode == 'PSJFE' or self.mode == 'SRPTE' or  self.mode=='PADSE' \
-                or self.mode=='MPADF' or self.mode=='MPADF2'or self.mode=='MPADM' or self.mode=='MPADM2':
+        if self.mode in ['MSRPT','MPSJF','MPADS','PSJFE','SRPTE','PADSE','MPADF','MPADF2','MPADM','MPADM2']:
             total_response_time = 0
             for x in self.effe_departure:
                 total_response_time += self.Customer['Response_Time'][x]
@@ -691,8 +1002,7 @@ class QUEUE(object):
         the average queue length observed based on customer arrivals due to PASTA
         return: mean queue length
         '''
-        if self.mode == 'MSRPT' or  self.mode == 'MPSJF' or  self.mode=='MPADS' or self.mode == 'PSJFE' or self.mode == 'SRPTE' or  self.mode=='PADSE' \
-                or self.mode == 'MPADF' or self.mode == 'MPADF2' or self.mode=='MPADM' or self.mode=='MPADM2':
+        if self.mode in ['MSRPT','MPSJF','MPADS','PSJFE','SRPTE','PADSE', 'MPADF','MPADF2','MPADM','MPADM2']:
             total_queuelength = 0
             for x in self.effe_departure:
                 total_queuelength += self.Customer['Queue_Number'][x]
@@ -705,3 +1015,30 @@ class QUEUE(object):
     def parameters(self):
         return 'Nuser=' + str(self.Nuser) + ', arrival_rate=' + str(self.arrival_rate) + ', mu =' + str(
             self.mu) + ', mode =' + self.mode
+
+    # if self.Customer['Inqueue_Time'][self.queues[x]]>self.Customer['Inqueue_Time'][self.queues[y]]:
+    #     if self.Customer['Inqueue_Time'][self.queues[x]]>self.Customer['Inqueue_Time'][self.queues[z]]:
+    #         if self.Customer['Inqueue_Time'][self.queues[y]]>self.Customer['Inqueue_Time'][self.queues[z]]:
+    #             temp1=x
+    #             temp2=y
+    #             temp3=z
+    #         else:
+    #             temp1=x
+    #             temp2=z
+    #             temp3=y
+    #     else:
+    #         temp1=z
+    #         temp2=x
+    #         temp3=y
+    # else:
+    #     if self.Customer['Inqueue_Time'][self.queues[z]]>self.Customer['Inqueue_Time'][self.queues[y]]:
+    #         temp1 = z
+    #         temp2 = y
+    #         temp3 = x
+    #     else:
+    #         if self.Customer['Inqueue_Time'][self.queues[x]]>self.Customer['Inqueue_Time'][self.queues[z]]:
+    #             temp1 = y, temp2 = x, temp3 = z
+    #         else:
+    #             temp1 = y
+    #             temp2 = z
+    #             temp3 = x
