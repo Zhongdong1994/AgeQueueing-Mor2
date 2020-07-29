@@ -114,13 +114,47 @@ class QUEUE(object):
         return arrival intervals with arrival_rate and index each customer's priority
         '''
 
-        self.Customer['Arrival_Intv'] = np.random.exponential(1 / self.arrival_rate, size=self.Nuser)
+        #self.Customer['Arrival_Intv'] = np.random.exponential(1 / self.arrival_rate, size=self.Nuser)
+        #self.Customer['Arrival_Intv'] = np.random.exponential(1 / self.arrival_rate, size=self.Nuser)
         # self.Customer['Priority'] = np.random.choice(self.num_user_type, size=self.Nuser, p=self.user_prob)
         # print(self.Customer['Priority'])
 
 
-        self.Customer['Work_Load'] = np.random.exponential(1 / self.mu, size=self.Nuser)
-        #self.Customer['Work_Load'] = 0.29752*np.random.weibull(0.39837, size=self.Nuser)  #  mean=1, csqr=10
+        if self.arrival_rate == 0.1:
+            self.Customer['Arrival_Intv'] = 2.97516 * np.random.weibull(0.39837, size=self.Nuser)
+        elif self.arrival_rate == 0.2:
+            self.Customer['Arrival_Intv'] = 1.48758 * np.random.weibull(0.39837, size=self.Nuser)
+        elif self.arrival_rate == 0.3:
+            self.Customer['Arrival_Intv'] = 0.99172 * np.random.weibull(0.39837, size=self.Nuser)
+        elif self.arrival_rate == 0.4:
+            self.Customer['Arrival_Intv'] = 0.74379 * np.random.weibull(0.39837, size=self.Nuser)
+        elif self.arrival_rate == 0.5:
+            self.Customer['Arrival_Intv'] = 0.59503 * np.random.weibull(0.39837, size=self.Nuser)
+        elif self.arrival_rate == 0.6:
+            self.Customer['Arrival_Intv'] = 0.49586 * np.random.weibull(0.39837, size=self.Nuser)
+        elif self.arrival_rate == 0.7:
+            self.Customer['Arrival_Intv'] = 0.42502 * np.random.weibull(0.39837, size=self.Nuser)
+        elif self.arrival_rate == 0.8:
+            self.Customer['Arrival_Intv'] = 0.37189 * np.random.weibull(0.39837, size=self.Nuser)
+        elif self.arrival_rate == 0.9:
+            self.Customer['Arrival_Intv'] = 0.33057 * np.random.weibull(0.39837, size=self.Nuser)
+
+
+        #self.Customer['Arrival_Intv'] = 0.29752*np.random.weibull(0.39837, size=self.Nuser)  #  mean=1, csqr=10
+        # self.Customer['Arrival_Intv'] = 0.324414* np.random.weibull(0.41134, size=self.Nuser)  # mean=1, csqr=9
+        # self.Customer['Arrival_Intv'] = 0.356264 * np.random.weibull(0.426775, size=self.Nuser)  # mean=1, csqr=8
+        # self.Customer['Arrival_Intv'] = 0.394549 * np.random.weibull(0.445573, size=self.Nuser)  # mean=1, csqr=7
+        # self.Customer['Arrival_Intv'] = 0.441402 * np.random.weibull(0.469165, size=self.Nuser)  # mean=1, csqr=6
+        # self.Customer['Arrival_Intv'] = 0.5 * np.random.weibull(0.5, size=self.Nuser)  # mean=1, csqr=5
+        # self.Customer['Arrival_Intv'] = 0.57525 * np.random.weibull(0.542693, size=self.Nuser)  # mean=1, csqr=4
+        # self.Customer['Arrival_Intv'] = 0.674996 * np.random.weibull(0.607248, size=self.Nuser)  # mean=1, csqr=3
+        # self.Customer['Arrival_Intv'] = 0.811794 * np.random.weibull(0.720905, size=self.Nuser)  # mean=1, csqr=2
+        # self.Customer['Arrival_Intv'] = 1 * np.random.weibull(1, size=self.Nuser)  # mean=1, csqr=1
+
+
+
+        #self.Customer['Work_Load'] = np.random.exponential(1 / self.mu, size=self.Nuser)
+        self.Customer['Work_Load'] = 0.29752*np.random.weibull(0.39837, size=self.Nuser)  #  mean=1, csqr=10
         #self.Customer['Work_Load'] = 0.324414* np.random.weibull(0.41134, size=self.Nuser)  # mean=1, csqr=9
         #self.Customer['Work_Load'] = 0.356264 * np.random.weibull(0.426775, size=self.Nuser)  # mean=1, csqr=8
         #self.Customer['Work_Load'] = 0.394549 * np.random.weibull(0.445573, size=self.Nuser)  # mean=1, csqr=7
@@ -132,7 +166,7 @@ class QUEUE(object):
         #self.Customer['Work_Load'] = 1 * np.random.weibull(1, size=self.Nuser)  # mean=1, csqr=1
 
         #self.Customer['Work_Load'] =  np.random.uniform(0,2, size=self.Nuser)
-        #self.Customer['Work_Load']=0.9*np.ones(self.Nuser)
+        #self.Customer['Work_Load']=1*np.ones(self.Nuser)
 
         self.Customer['Remain_Work_Load'] = np.copy(self.Customer['Work_Load'])
 
@@ -950,6 +984,14 @@ class QUEUE(object):
 
         # serve remaining customers in the queue till the end
         self.serve_between_time(self.Customer['Inqueue_Time'][idx_a], -1)
+
+        # # the following is to check the evolution of the queue
+        # for x in range(len(self.Customer)):
+        #     print("arrival interval:" + str(self.Customer['Arrival_Intv'][x]))
+        #     print("inqueuq time:" +str(self.Customer['Inqueue_Time'][x]))
+        #     print("service time:" + str(self.Customer['Work_Load'][x]))
+        #     print("dequeuq time:" + str(self.Customer['Dequeue_Time'][x]))
+        #     print("response time:" + str(self.Customer['Response_Time'][x]))
 
     def change_mode(self, mode):
         '''
