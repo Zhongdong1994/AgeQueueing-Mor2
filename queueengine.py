@@ -17,7 +17,7 @@ import time
 class QUEUE(object):
     """docstring for QUEUE
     Queueing with priority users. The smaller value, the higher priority.
-    Poisson arrival process: total arrival rate = arrival_rate; probability distribtion for different users = user_prob
+    Poisson arrival process: total arrival rate = arrival_rate; probability distribtion for different users = user_prob 
     Deterministic service process: service rates for different users = mu
     """
 
