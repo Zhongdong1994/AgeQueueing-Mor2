@@ -116,12 +116,16 @@ class QUEUE(object):
 
         #self.Customer['Arrival_Intv'] = np.random.exponential(1 / self.arrival_rate, size=self.Nuser)
         self.Customer['Arrival_Intv'] = np.random.geometric(self.arrival_rate, size=self.Nuser)
+        #self.Customer['Arrival_Intv']=[3, 2, 5, 1, 2, 1, 1, 1, 1, 1]
+        #print(self.Customer['Arrival_Intv'])
         # self.Customer['Priority'] = np.random.choice(self.num_user_type, size=self.Nuser, p=self.user_prob)
         # print(self.Customer['Priority'])
 
 
         #self.Customer['Work_Load'] = np.random.exponential(1 / self.mu, size=self.Nuser)
-        self.Customer['Work_Load'] = np.random.geometric(self.mu, size=self.Nuser)
+        self.Customer['Work_Load']= np.random.geometric(self.mu, size=self.Nuser)
+        #self.Customer['Work_Load']=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        #print(self.Customer['Work_Load'])
         #self.Customer['Work_Load'] = 0.29752*np.random.weibull(0.39837, size=self.Nuser)  #  mean=1, csqr=10
         #self.Customer['Work_Load'] = 0.324414* np.random.weibull(0.41134, size=self.Nuser)  # mean=1, csqr=9
         #self.Customer['Work_Load'] = 0.356264 * np.random.weibull(0.426775, size=self.Nuser)  # mean=1, csqr=8
@@ -168,14 +172,14 @@ class QUEUE(object):
     def os(self, temp=1):  ### return the index of minimum original work load in the queue
         minimum = 0
         for x in range(temp):
-            if self.Customer['Work_Load'][self.queues[x]] < self.Customer['Work_Load'][self.queues[minimum]]:
+            if self.Customer['Work_Load'][self.queues[x]] <= self.Customer['Work_Load'][self.queues[minimum]]:
                 minimum = x
         return minimum
 
     def rs(self, temp=1):  ### return the index of a job  which has the  minimum remaining work load in the queue, FCFS if two jobs have the same minimum remaining work load
         minimum = 0
         for x in range(temp):
-            if self.Customer['Remain_Work_Load'][self.queues[x]] < self.Customer['Remain_Work_Load'][
+            if self.Customer['Remain_Work_Load'][self.queues[x]] <= self.Customer['Remain_Work_Load'][
                 self.queues[minimum]]:
                 minimum = x
         return minimum
@@ -192,12 +196,6 @@ class QUEUE(object):
         return minimum
 
     def ageDroptoSmallest(self,temp=1,currentTime=0):
-        # minimum = 0
-        # for x in range(temp):
-        #     if currentTime+self.Customer['Remain_Work_Load'][self.queues[x]]-max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][self.queues[x]]) < \
-        #             currentTime+self.Customer['Remain_Work_Load'][self.queues[minimum]]-max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][self.queues[minimum]]):
-        #         minimum = x
-        # return minimum
         jobsMakeAgeDrop = []
         jobsNotMakeAgeDrop = []
         for x in range(temp):
@@ -210,7 +208,7 @@ class QUEUE(object):
         else:
             minimum = jobsMakeAgeDrop[0]
             for x in jobsMakeAgeDrop:
-                if currentTime+self.Customer['Remain_Work_Load'][x]-self.Customer['Inqueue_Time'][x] < \
+                if currentTime+self.Customer['Remain_Work_Load'][x]-self.Customer['Inqueue_Time'][x] <= \
                      currentTime+self.Customer['Remain_Work_Load'][minimum]-self.Customer['Inqueue_Time'][minimum]:
                     minimum = x
             return self.queues.index(minimum)
@@ -228,7 +226,7 @@ class QUEUE(object):
         else:
             minimum=jobsMakeAgeDrop[0]
             for x in jobsMakeAgeDrop:
-                if self.Customer['Remain_Work_Load'][x] < self.Customer['Remain_Work_Load'][minimum]:
+                if self.Customer['Remain_Work_Load'][x] <= self.Customer['Remain_Work_Load'][minimum]:
                     minimum = x
             return self.queues.index(minimum)
 
@@ -387,10 +385,9 @@ class QUEUE(object):
 
 
         if self.mode == 'PS':
-            if t_end == -1 or self.Customer['Remain_Work_Load'][i] < (t_end - t_begin) / (len(self.queues) + 1):
+            if t_end == -1 or self.Customer['Remain_Work_Load'][i] <= (t_end - t_begin) / (len(self.queues) + 1):
                 self.Customer['Serve_Intv'][i] += self.Customer['Remain_Work_Load'][i]
-                self.Customer['Dequeue_Time'][i] = t_begin + self.Customer['Remain_Work_Load'][i] * (
-                            len(self.queues) + 1)
+                self.Customer['Dequeue_Time'][i] = t_begin + self.Customer['Remain_Work_Load'][i] * (len(self.queues) + 1)
                 for j in self.queues:
                     self.Customer['Serve_Intv'][j] += self.Customer['Remain_Work_Load'][i]
                     self.Customer['Remain_Work_Load'][j] -= self.Customer['Remain_Work_Load'][i]
@@ -407,11 +404,12 @@ class QUEUE(object):
                 return t_end
 
         ### the following is for general case (i.e., the jobs are served one by one)
-        if t_end == -1 or self.Customer['Remain_Work_Load'][i] < t_end - t_begin:
+        if t_end == -1 or self.Customer['Remain_Work_Load'][i] <= t_end - t_begin:
             # customer departs
             self.Customer['Serve_Intv'][i] += self.Customer['Remain_Work_Load'][i]
             # depart time = current time + work load
             self.Customer['Dequeue_Time'][i] = t_begin + self.Customer['Remain_Work_Load'][i]
+            #print(i, "-th update dequeue time: ",self.Customer['Dequeue_Time'][i])
             self.Customer['Remain_Work_Load'][i] = 0
             return self.depart(i)
         else:
@@ -443,8 +441,10 @@ class QUEUE(object):
             # effective departure
             self.largest_inqueue_time=self.Customer['Inqueue_Time'][i]
             self.Customer['Age_Dept'][i] = self.Customer['Dequeue_Time'][i] - self.Customer['Inqueue_Time'][i]
+            #print("age_departure:", self.Customer['Age_Dept'][i])
             self.Customer['Age_Peak'][i] = self.Customer['Age_Dept'][self.last_depart] + self.Customer['Dequeue_Intv'][
                 i]
+            #print("age_peak:",self.Customer['Age_Peak'][i])
             self.effe_queues.append(i)
 
         self.effe_departure.append(i)
@@ -483,7 +483,7 @@ class QUEUE(object):
         if self.mode == 'PLCFS':
             return True
         elif self.mode == 'SRPT' or self.mode == 'MSRPT' or self.mode=='SRPTE' or self.mode=='SRPTL':
-            return self.Customer['Remain_Work_Load'][i_new] < self.Customer['Remain_Work_Load'][i_old]
+            return self.Customer['Remain_Work_Load'][i_new] <= self.Customer['Remain_Work_Load'][i_old]
         elif self.mode == 'SRPTA' or self.mode=='AoI2PE' or self.mode=='AoI3PE' or self.mode=='AoI2RP' or self.mode=='AoI3RP':
             ageAreaofPreemption=(self.Customer['Inqueue_Time'][i_old]-self.largest_inqueue_time)*(self.Customer['Remain_Work_Load'][i_new]-self.Customer['Remain_Work_Load'][i_old])
             ageAreaofNonPreemption=(self.Customer['Inqueue_Time'][i_new]-self.Customer['Inqueue_Time'][i_old])*self.Customer['Remain_Work_Load'][i_old]
@@ -498,21 +498,21 @@ class QUEUE(object):
             # area2=self.Customer['Work_Load'][i_new] / 2 + self.Customer['Age_Arvl'][i_new]
             # return area2<area1
         elif self.mode == 'PSJF' or self.mode == 'MPSJF' or self.mode == 'PSJFE':
-            return self.Customer['Work_Load'][i_new] < self.Customer['Work_Load'][i_old]
+            return self.Customer['Work_Load'][i_new] <= self.Customer['Work_Load'][i_old]
         elif self.mode=='PADS' or self.mode=='MPADS' or self.mode=='PADSE':
-             check= self.Customer['Remain_Work_Load'][i_new] - max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][i_new])< \
+             check= self.Customer['Remain_Work_Load'][i_new] - max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][i_new])<= \
                     self.Customer['Remain_Work_Load'][i_old] - max(self.largest_inqueue_time,self.Customer['Inqueue_Time'][i_old])
              return check
         elif self.mode=='PADF'or self.mode=='MPADF' or self.mode=='MPADF2' or self.mode=='PADFE':
             if self.Customer['Inqueue_Time'][i_old] < self.largest_inqueue_time:
                 return True
             else:
-                return  self.Customer['Remain_Work_Load'][i_new] < self.Customer['Remain_Work_Load'][i_old]
+                return  self.Customer['Remain_Work_Load'][i_new] <= self.Customer['Remain_Work_Load'][i_old]
         elif self.mode=='PADM'or self.mode=='MPADM' or self.mode=='MPADM2':
             if self.Customer['Inqueue_Time'][i_old] < self.largest_inqueue_time:
                 return True
             else:
-                return  self.Customer['Age_Arvl'][i_new] > self.Customer['Inqueue_Time'][i_old]-self.largest_inqueue_time
+                return  self.Customer['Age_Arvl'][i_new] >= self.Customer['Inqueue_Time'][i_old]-self.largest_inqueue_time
         else:
             return False
 
@@ -597,6 +597,7 @@ class QUEUE(object):
                 temp = self.Customer['Dequeue_Time'][self.effe_queues[x]] - self.Customer['Dequeue_Time'][
                     self.effe_queues[x - 1]]  # temp denotes the inter-departure time
                 total_age += self.Customer['Age_Peak'][self.effe_queues[x]] * temp - temp*(temp-1)/2
+            #print("total age of",x,"-th effecitve update",total_age)
         return total_age / self.Customer['Dequeue_Time'][self.Nuser - 1]
 
     def mean_peak_age(self):

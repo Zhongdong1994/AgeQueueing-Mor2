@@ -20,8 +20,9 @@ def simulate():
     # arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     #arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     #arrival_rates = [0.7,0.8,0.9]
-    #arrival_rates = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.89]
-    arrival_rates = [0.1,0.5,0.89]
+    arrival_rates = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.89]
+    #arrival_rates = [0.1,0.5,0.85]
+    #arrival_rates = [0.5]
     Nuser =100000
     mu = 0.9
     rounds = 10
@@ -37,9 +38,9 @@ def simulate():
     #modes=['PLCFS','LCFSE','SJFE','PSJFE','SRPT','SRPTE','SRPTA','AoI2','AoI2P','AoI2R','AoI2RP','AoI3','AoI3P','AoI3R','AoI3RP']
     #modes=['SJF','PSJF','SJFE','PSJFE','SRPT','SRPTE','ADF','PADF','ADS','PADS','ADM','PADM','AoI2','AoI2P','AoI3','AoI3P']
     #modes = [ 'SJF','PSJFE','ADS','PADSE','SRPT', 'SRPTE', 'AoI2','AoI2PE']
-    modes = ['FCFS']
+    #modes = ['FCFS']
 
-    #modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT']
+    modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADM','ADS','ADF','PADM','PADS','PADF']
     #modes=['SRPT','LCFS','SJF','ADM','ADS','ADF','AoI2', 'AoI3']
 
     #modes = [ 'FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','RANDOME', 'LCFSE', 'SJFE', 'PSJFE', 'SRPTE','SRPTA']
