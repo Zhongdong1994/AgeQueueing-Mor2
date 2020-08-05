@@ -43,22 +43,22 @@ class QUEUE(object):
         self.last_depart = -1  # by default no customer departs
         self.i_serving = -1  # by default no customer under serving
         # array to store all queueing related performance metric
-        self.Customer = np.zeros(self.Nuser, dtype=np.dtype([('Inqueue_Time', float),
-                                                             ('Arrival_Intv', float),  # arrival interval time
-                                                             ('Waiting_Intv', float),
-                                                             ('Serve_Intv', float),
-                                                             ('Work_Load', float),
-                                                             ('Remain_Work_Load', float),
-                                                             ('Dequeue_Intv', float),
-                                                             ('Dequeue_Time', float),
-                                                             ('TSLS', float), # time-since-last-service
+        self.Customer = np.zeros(self.Nuser, dtype=np.dtype([('Inqueue_Time', int),
+                                                             ('Arrival_Intv', int),  # arrival interval time
+                                                             ('Waiting_Intv', int),
+                                                             ('Serve_Intv', int),
+                                                             ('Work_Load', int),
+                                                             ('Remain_Work_Load', int),
+                                                             ('Dequeue_Intv', int),
+                                                             ('Dequeue_Time', int),
+                                                             ('TSLS', int), # time-since-last-service
                                                              ('Block_Tag', bool),
                                                              #     ('Block_Depth',int),
                                                              ('Queue_Number', int),
-                                                             ('Response_Time', float),
-                                                             ('Age_Arvl', float),
-                                                             ('Age_Dept', float),
-                                                             ('Age_Peak', float)]))
+                                                             ('Response_Time', int),
+                                                             ('Age_Arvl', int),
+                                                             ('Age_Dept', int),
+                                                             ('Age_Peak', int)]))
         #     ('Age_Inef_Tag',bool),
         #     ('Priority',int)]
 
@@ -80,22 +80,22 @@ class QUEUE(object):
         self.last_depart = -1  # by default no customer departs
         self.i_serving = -1  # by default no customer under serving
         self.largest_inqueue_time = 0
-        Customer = np.zeros(self.Nuser, dtype=np.dtype([('Inqueue_Time', float),
-                                                        ('Arrival_Intv', float),
-                                                        ('Waiting_Intv', float),
-                                                        ('Serve_Intv', float),
-                                                        ('Work_Load', float),
-                                                        ('Remain_Work_Load', float),  ### index=5
-                                                        ('Dequeue_Intv', float),
-                                                        ('Dequeue_Time', float),
-                                                        ('TSLS', float),  # time-since-last-service
+        Customer = np.zeros(self.Nuser, dtype=np.dtype([('Inqueue_Time', int),
+                                                        ('Arrival_Intv', int),
+                                                        ('Waiting_Intv', int),
+                                                        ('Serve_Intv', int),
+                                                        ('Work_Load', int),
+                                                        ('Remain_Work_Load', int),  ### index=5
+                                                        ('Dequeue_Intv', int),
+                                                        ('Dequeue_Time', int),
+                                                        ('TSLS', int),  # time-since-last-service
                                                         ('Block_Tag', bool),
                                                         #    ('Block_Depth',int),
                                                         ('Queue_Number', int),
-                                                        ('Response_Time', float),
-                                                        ('Age_Arvl', float),
-                                                        ('Age_Dept', float),
-                                                        ('Age_Peak', float)]))
+                                                        ('Response_Time', int),
+                                                        ('Age_Arvl', int),
+                                                        ('Age_Dept', int),
+                                                        ('Age_Peak', int)]))
         #   ('Age_Inef_Tag',bool),
         #   ('Priority',int)
         Customer['Arrival_Intv'] = np.copy(self.Customer['Arrival_Intv'])
