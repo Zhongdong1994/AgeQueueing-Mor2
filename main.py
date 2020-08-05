@@ -20,12 +20,12 @@ def simulate():
     # arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     #arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     #arrival_rates = [0.7,0.8,0.9]
-    arrival_rates = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.89]
+    arrival_rates = [0.01,0.03,0.05,0.07,0.09,0.1,0.2,0.3,0.4,0.45,0.47,0.49]
     #arrival_rates = [0.1,0.5,0.85]
     #arrival_rates = [0.5]
-    Nuser =100000
-    mu = 0.9
-    rounds = 10
+    Nuser =10000
+    mu = 0.5
+    rounds = 5
     #modes=['LCFS','RANDOM','SJF','SRPT','RANDOME','LCFSE','SJFE','PSJFE','SRPTE','ADM','ADS','ADF','ADFE','AoI2','AoI3','AoI2PE','AoI3PE']
     # modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PADS','MPSJF', 'MSRPT','MPADS']  ###  FB is currently unavailable
     # modes = ['PSJF', 'SRPT',  'PADS', 'MPSJF', 'MSRPT', 'MPADS','PSJFE','SRPTE', 'MPADS2','PADF','MPADF','MPADF2','ADM','PADM']
@@ -40,7 +40,7 @@ def simulate():
     #modes = [ 'SJF','PSJFE','ADS','PADSE','SRPT', 'SRPTE', 'AoI2','AoI2PE']
     #modes = ['FCFS']
 
-    modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADM','ADS','ADF','PADM','PADS','PADF']
+    modes = ['FCFS', 'RANDOM','LCFS', 'TSLS','PLCFS', 'SJF', 'PSJF', 'SRPT','ADM','ADS','ADF','PADM','PADS','PADF']
     #modes=['SRPT','LCFS','SJF','ADM','ADS','ADF','AoI2', 'AoI3']
 
     #modes = [ 'FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','RANDOME', 'LCFSE', 'SJFE', 'PSJFE', 'SRPTE','SRPTA']

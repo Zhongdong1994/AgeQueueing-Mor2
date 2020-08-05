@@ -51,6 +51,7 @@ class QUEUE(object):
                                                              ('Remain_Work_Load', float),
                                                              ('Dequeue_Intv', float),
                                                              ('Dequeue_Time', float),
+                                                             ('TSLS', float), # time-since-last-service
                                                              ('Block_Tag', bool),
                                                              #     ('Block_Depth',int),
                                                              ('Queue_Number', int),
@@ -87,6 +88,7 @@ class QUEUE(object):
                                                         ('Remain_Work_Load', float),  ### index=5
                                                         ('Dequeue_Intv', float),
                                                         ('Dequeue_Time', float),
+                                                        ('TSLS', float),  # time-since-last-service
                                                         ('Block_Tag', bool),
                                                         #    ('Block_Depth',int),
                                                         ('Queue_Number', int),
@@ -184,6 +186,14 @@ class QUEUE(object):
                 minimum = x
         return minimum
 
+    def tsls(self,temp=1):
+        maximum = 0
+        for x in range(temp):
+            if self.Customer['TSLS'][self.queues[x]] >= self.Customer['TSLS'][
+                self.queues[maximum]]:
+                maximum = x
+        return maximum
+
     def rs2(self, temp=1):  ### return the index of a job  which has the  minimum remaining work load in the queue, LCFS if two jobs have the same minimum remaining work load
         minimum = 0 #temp-1
         for x in range(temp):
@@ -260,86 +270,85 @@ class QUEUE(object):
             return self.queues.pop()
         if self.mode == 'LCFSE':
             returnvalue = self.queues.pop()
-            # for x in self.queues:
-            #     if self.Customer['Inqueue_Time'][x] < self.Customer['Inqueue_Time'][returnvalue]:
-            #         self.queues.remove(x)
             self.queues = list(filter(lambda x: x > returnvalue, self.queues))
             return returnvalue
         if self.mode == 'RANDOM':
             return self.queues.pop(random.randint(0, len(self.queues) - 1))
-        if self.mode == 'RANDOME':
-            returnvalue = self.queues.pop(random.randint(0, len(self.queues) - 1))
-            self.queues = list(filter(lambda x: x > returnvalue, self.queues))
-            return returnvalue
+        # if self.mode == 'RANDOME':  # comment out at 8.5.2020, since informative version is not used yet
+        #     returnvalue = self.queues.pop(random.randint(0, len(self.queues) - 1))
+        #     self.queues = list(filter(lambda x: x > returnvalue, self.queues))
+        #     return returnvalue
         if self.mode == 'SJF' or self.mode == 'PSJF' or self.mode == 'MPSJF':
             return  self.queues.pop(self.os(len(self.queues)))
-        if self.mode=='SJFE':
-            returnvalue = self.queues.pop(self.os(len(self.queues)))
-            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
-            return returnvalue
-        if self.mode=='PSJFE':
-            returnvalue= self.queues.pop(self.os(len(self.queues)))
-            #print(returnvalue)
-            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
-            return  returnvalue
+        # if self.mode=='SJFE':  # comment out at 8.5.2020, since informative version is not used yet
+        #     returnvalue = self.queues.pop(self.os(len(self.queues)))
+        #     self.queues=list(filter(lambda x: x>returnvalue,self.queues))
+        #     return returnvalue
+        # if self.mode=='PSJFE':
+        #     returnvalue= self.queues.pop(self.os(len(self.queues)))
+        #     #print(returnvalue)
+        #     self.queues=list(filter(lambda x: x>returnvalue,self.queues))
+        #     return  returnvalue
         if self.mode == 'SRPT' or self.mode == 'MSRPT'or self.mode == 'SRPTA':
             return self.queues.pop(self.rs(len(self.queues)))
-        if self.mode=='AoI2PE' or self.mode=='AoI2E':
-            returnvalue = self.queues.pop(self.ageBased2_2(len(self.queues)))
-            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
-            return returnvalue
-        if self.mode=='AoI2':
-            returnvalue = self.queues.pop(self.ageBased2_3(len(self.queues)))
-            return returnvalue
-        if self.mode=='AoI3':
-            returnvalue = self.queues.pop(self.ageBased3_4(len(self.queues)))
-            return returnvalue
-        if self.mode=='AoI2RP' or self.mode=='AoI2R':
-            returnvalue = self.queues.pop(self.ageBased2(len(self.queues)))
-            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
-            return returnvalue
-        if  self.mode=='AoI3E' or self.mode=='AoI3PE':
-            returnvalue = self.queues.pop(self.ageBased3_3(len(self.queues)))
-            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
-            return returnvalue
-        if  self.mode=='AoI3R' or self.mode=='AoI3RP':
-            returnvalue = self.queues.pop(self.ageBased3(len(self.queues)))
-            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
-            return returnvalue
-        if self.mode=='SRPTL':
-            return self.queues.pop(self.rs2(len(self.queues)))
-        if self.mode=='SRPTE':
-            returnvalue= self.queues.pop(self.rs(len(self.queues)))
-            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
-            return  returnvalue
-        if self.mode == 'PS':
-            return self.queues.pop(self.rs(len(self.queues)))
+        # if self.mode=='AoI2PE' or self.mode=='AoI2E':    # comment out at 8.5.2020, since informative version is not used yet
+        #     returnvalue = self.queues.pop(self.ageBased2_2(len(self.queues)))
+        #     self.queues=list(filter(lambda x: x>returnvalue,self.queues))
+        #     return returnvalue
+        # if self.mode=='AoI2':
+        #     returnvalue = self.queues.pop(self.ageBased2_3(len(self.queues)))
+        #     return returnvalue
+        # if self.mode=='AoI3':
+        #     returnvalue = self.queues.pop(self.ageBased3_4(len(self.queues)))
+        #     return returnvalue
+        # if self.mode=='AoI2RP' or self.mode=='AoI2R':
+        #     returnvalue = self.queues.pop(self.ageBased2(len(self.queues)))
+        #     self.queues=list(filter(lambda x: x>returnvalue,self.queues))
+        #     return returnvalue
+        # if  self.mode=='AoI3E' or self.mode=='AoI3PE':
+        #     returnvalue = self.queues.pop(self.ageBased3_3(len(self.queues)))
+        #     self.queues=list(filter(lambda x: x>returnvalue,self.queues))
+        #     return returnvalue
+        # if  self.mode=='AoI3R' or self.mode=='AoI3RP':
+        #     returnvalue = self.queues.pop(self.ageBased3(len(self.queues)))
+        #     self.queues=list(filter(lambda x: x>returnvalue,self.queues))
+        #     return returnvalue
+        # if self.mode=='SRPTL':
+        #     return self.queues.pop(self.rs2(len(self.queues)))
+        # if self.mode=='SRPTE':
+        #     returnvalue= self.queues.pop(self.rs(len(self.queues)))
+        #     self.queues=list(filter(lambda x: x>returnvalue,self.queues))
+        #     return  returnvalue
+        # if self.mode == 'PS':
+        #     return self.queues.pop(self.rs(len(self.queues)))
+        if self.mode=='TSLS':
+            return self.queues.pop(self.tsls(len(self.queues)))
         if self.mode == 'ADS' or self.mode == 'PADS' or self.mode == 'MPADS' :
             return self.queues.pop(self.ageDroptoSmallest(len(self.queues), currentTime))
-        if self.mode=='ADSE' or self.mode=='PADSE':
-            returnvalue= self.queues.pop(self.ageDroptoSmallest(len(self.queues)))
-            self.queues = list(filter(lambda x: x > returnvalue, self.queues))
-            return returnvalue
-        if self.mode=='MPADS2':
-            returnvalue= self.queues.pop(self.ageDroptoSmallest(len(self.queues), currentTime))
-            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
-            return  returnvalue
+        # if self.mode=='ADSE' or self.mode=='PADSE':   # comment out at 8.5.2020, since informative version is not used yet
+        #     returnvalue= self.queues.pop(self.ageDroptoSmallest(len(self.queues)))
+        #     self.queues = list(filter(lambda x: x > returnvalue, self.queues))
+        #     return returnvalue
+        # if self.mode=='MPADS2':
+        #     returnvalue= self.queues.pop(self.ageDroptoSmallest(len(self.queues), currentTime))
+        #     self.queues=list(filter(lambda x: x>returnvalue,self.queues))
+        #     return  returnvalue
         if self.mode=='ADF' or self.mode=='PADF' or self.mode=='MPADF':
             return self.queues.pop(self.ageDropFast(len(self.queues)))
-        if self.mode=='ADFE' or self.mode=='PADFE':
-            returnvalue= self.queues.pop(self.ageDropFast(len(self.queues)))
-            self.queues = list(filter(lambda x: x > returnvalue, self.queues))
-            return returnvalue
-        if self.mode=='MPADF2':
-            returnvalue= self.queues.pop(self.ageDropFast(len(self.queues)))
-            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
-            return  returnvalue
+        # if self.mode=='ADFE' or self.mode=='PADFE':  # comment out at 8.5.2020, since informative version is not used yet
+        #     returnvalue= self.queues.pop(self.ageDropFast(len(self.queues)))
+        #     self.queues = list(filter(lambda x: x > returnvalue, self.queues))
+        #     return returnvalue
+        # if self.mode=='MPADF2':
+        #     returnvalue= self.queues.pop(self.ageDropFast(len(self.queues)))
+        #     self.queues=list(filter(lambda x: x>returnvalue,self.queues))
+        #     return  returnvalue
         if self.mode=='ADM' or self.mode=='PADM' or self.mode=='MPADM':
             return self.queues.pop(self.ageDropMost(len(self.queues)))
-        if self.mode=='MPADM2':
-            returnvalue= self.queues.pop(self.ageDropMost(len(self.queues)))
-            self.queues=list(filter(lambda x: x>returnvalue,self.queues))
-            return  returnvalue
+        # if self.mode=='MPADM2':   # comment out at 8.5.2020, since informative version is not used yet
+        #     returnvalue= self.queues.pop(self.ageDropMost(len(self.queues)))
+        #     self.queues=list(filter(lambda x: x>returnvalue,self.queues))
+        #     return  returnvalue
 
 
 
@@ -350,7 +359,7 @@ class QUEUE(object):
         '''
         if self.mode in ['FCFS', 'RANDOM','RANDOME', 'LCFS','LCFSE', 'PS', 'PLCFS', 'SJF', 'SJFE','PSJF', 'SRPT','ADS','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2',
                          'SRPTL','SRPTA','ADF','PADF','MPADF','MPADF2','ADM','PADM','MPADM','MPADM2','AoI2PE','AoI2E','AoI3E','AoI3PE','AoI2RP','AoI2R','AoI3R','AoI3RP','ADFE',
-                         'PADFE','AoI2','AoI3','PADSE']:
+                         'PADFE','AoI2','AoI3','PADSE','TSLS']:
             self.queues.append(i)
         else:
             print('Improper queueing mode in queue_append!', self.mode)
@@ -376,33 +385,46 @@ class QUEUE(object):
         ''' serve the i-th customer
         return the time when the service ends/stops
         '''
-        # idx_queue_minSer=self.minAservice(self.queues)
-        # idx_conqueue_minRem=self.minRservice(self.conqueue)
-        # if self.mode=='FB':
-        #     T2=len(self.conqueue)*(self.Customer['Serve_Intv'][idx_queue_minSer]-self.Customer['Serve_Intv'][0])
-        #     T1=len(self.conqueue)*(self.Customer['Remain_Work_Load'][idx_conqueue_minRem])
-        #     if T2==0: # implies queue[]==conqueue[]
 
 
-        if self.mode == 'PS':
-            if t_end == -1 or self.Customer['Remain_Work_Load'][i] <= (t_end - t_begin) / (len(self.queues) + 1):
+        # if self.mode == 'PS':    # comment out at 8.5.2020, since PS is not reasonable in time-slotted system
+        #     if t_end == -1 or self.Customer['Remain_Work_Load'][i] <= (t_end - t_begin) / (len(self.queues) + 1):
+        #         self.Customer['Serve_Intv'][i] += self.Customer['Remain_Work_Load'][i]
+        #         self.Customer['Dequeue_Time'][i] = t_begin + self.Customer['Remain_Work_Load'][i] * (len(self.queues) + 1)
+        #         for j in self.queues:
+        #             self.Customer['Serve_Intv'][j] += self.Customer['Remain_Work_Load'][i]
+        #             self.Customer['Remain_Work_Load'][j] -= self.Customer['Remain_Work_Load'][i]
+        #         self.Customer['Remain_Work_Load'][i] = 0
+        #         return self.depart(i)
+        #     else:
+        #         # self.Customer['Serve_Intv'][i] += t_end - t_begin
+        #         # self.Customer['Remain_Work_Load'][i] -= t_end - t_begin
+        #         self.Customer['Serve_Intv'][i] += (t_end - t_begin)/ (len(self.queues) + 1)
+        #         self.Customer['Remain_Work_Load'][i] -= (t_end - t_begin) / (len(self.queues) + 1)
+        #         for j in self.queues:
+        #             self.Customer['Serve_Intv'][j] += (t_end - t_begin)/ (len(self.queues) + 1)
+        #             self.Customer['Remain_Work_Load'][j] -= (t_end - t_begin) / (len(self.queues) + 1)
+        #         return t_end
+
+
+        if self.mode=='TSLS':
+            if t_end == -1 or self.Customer['Remain_Work_Load'][i] <= 1:
+                # customer departs
                 self.Customer['Serve_Intv'][i] += self.Customer['Remain_Work_Load'][i]
-                self.Customer['Dequeue_Time'][i] = t_begin + self.Customer['Remain_Work_Load'][i] * (len(self.queues) + 1)
-                for j in self.queues:
-                    self.Customer['Serve_Intv'][j] += self.Customer['Remain_Work_Load'][i]
-                    self.Customer['Remain_Work_Load'][j] -= self.Customer['Remain_Work_Load'][i]
+                # depart time = current time + work load
+                self.Customer['Dequeue_Time'][i] = t_begin + self.Customer['Remain_Work_Load'][i]
+                # print(i, "-th update dequeue time: ",self.Customer['Dequeue_Time'][i])
                 self.Customer['Remain_Work_Load'][i] = 0
+                self.Customer['TSLS'][i] = 0
                 return self.depart(i)
             else:
-                # self.Customer['Serve_Intv'][i] += t_end - t_begin
-                # self.Customer['Remain_Work_Load'][i] -= t_end - t_begin
-                self.Customer['Serve_Intv'][i] += (t_end - t_begin)/ (len(self.queues) + 1)
-                self.Customer['Remain_Work_Load'][i] -= (t_end - t_begin) / (len(self.queues) + 1)
+                # part of work is served
+                self.Customer['Serve_Intv'][i] += 1
+                self.Customer['Remain_Work_Load'][i] -= 1
+                self.Customer['TSLS'][i] = 0
                 for j in self.queues:
-                    self.Customer['Serve_Intv'][j] += (t_end - t_begin)/ (len(self.queues) + 1)
-                    self.Customer['Remain_Work_Load'][j] -= (t_end - t_begin) / (len(self.queues) + 1)
-                return t_end
-
+                    self.Customer['TSLS'][j] +=1
+                return t_begin+1
         ### the following is for general case (i.e., the jobs are served one by one)
         if t_end == -1 or self.Customer['Remain_Work_Load'][i] <= t_end - t_begin:
             # customer departs
@@ -484,19 +506,13 @@ class QUEUE(object):
             return True
         elif self.mode == 'SRPT' or self.mode == 'MSRPT' or self.mode=='SRPTE' or self.mode=='SRPTL':
             return self.Customer['Remain_Work_Load'][i_new] <= self.Customer['Remain_Work_Load'][i_old]
-        elif self.mode == 'SRPTA' or self.mode=='AoI2PE' or self.mode=='AoI3PE' or self.mode=='AoI2RP' or self.mode=='AoI3RP':
-            ageAreaofPreemption=(self.Customer['Inqueue_Time'][i_old]-self.largest_inqueue_time)*(self.Customer['Remain_Work_Load'][i_new]-self.Customer['Remain_Work_Load'][i_old])
-            ageAreaofNonPreemption=(self.Customer['Inqueue_Time'][i_new]-self.Customer['Inqueue_Time'][i_old])*self.Customer['Remain_Work_Load'][i_old]
-            if ageAreaofPreemption<0:
-                return True
-            else:
-                return ageAreaofPreemption < ageAreaofNonPreemption
-            # area1=np.square(self.Customer['Remain_Work_Load'][i_old])/2+self.Customer['Remain_Work_Load'][i_old]*self.Customer['Age_Arvl'][i_new]+ \
-            #       np.square(self.Customer['Work_Load'][i_new]) / 2 + self.Customer['Work_Load'][i_new] * \
-            #       (self.Customer['Inqueue_Time'][i_new]-self.Customer['Inqueue_Time'][i_old]+self.Customer['Remain_Work_Load'][i_old])
-            # area1=area1/(self.Customer['Remain_Work_Load'][i_old]+self.Customer['Work_Load'][i_new])
-            # area2=self.Customer['Work_Load'][i_new] / 2 + self.Customer['Age_Arvl'][i_new]
-            # return area2<area1
+        # elif self.mode == 'SRPTA' or self.mode=='AoI2PE' or self.mode=='AoI3PE' or self.mode=='AoI2RP' or self.mode=='AoI3RP':  # comment out at 8.5.2020, since informative version is not used yet
+        #     ageAreaofPreemption=(self.Customer['Inqueue_Time'][i_old]-self.largest_inqueue_time)*(self.Customer['Remain_Work_Load'][i_new]-self.Customer['Remain_Work_Load'][i_old])
+        #     ageAreaofNonPreemption=(self.Customer['Inqueue_Time'][i_new]-self.Customer['Inqueue_Time'][i_old])*self.Customer['Remain_Work_Load'][i_old]
+        #     if ageAreaofPreemption<0:
+        #         return True
+        #     else:
+        #         return ageAreaofPreemption < ageAreaofNonPreemption
         elif self.mode == 'PSJF' or self.mode == 'MPSJF' or self.mode == 'PSJFE':
             return self.Customer['Work_Load'][i_new] <= self.Customer['Work_Load'][i_old]
         elif self.mode=='PADS' or self.mode=='MPADS' or self.mode=='PADSE':
@@ -517,8 +533,6 @@ class QUEUE(object):
             return False
 
 
-        # # no preemption by default
-        # return False
 
     def preempt(self, i_old, i_new):
         '''
@@ -557,16 +571,10 @@ class QUEUE(object):
 
             if self.preemptive and self.is_preempted(self.i_serving, idx_a):
                 self.preempt(self.i_serving, idx_a)
-            elif self.mode == 'PS' and self.Customer['Remain_Work_Load'][self.i_serving] > \
-                    self.Customer['Remain_Work_Load'][idx_a]:
-                self.queues.append(self.i_serving)
-                self.i_serving = idx_a
-            # elif self.mode=='FB':  # this part is useful, do not delete
-            #     if self.i_serving>=0:
-            #         self.queues.append(self.i_serving)
-            #         self.i_serving = idx_a
-            #     else:
-            #         self.i_serving = idx_a
+            # elif self.mode == 'PS' and self.Customer['Remain_Work_Load'][self.i_serving] > \      ## comment out at 8.5.2020, since PS is not reasonable in time-slotted system
+            #         self.Customer['Remain_Work_Load'][idx_a]:
+            #     self.queues.append(self.i_serving)
+            #     self.i_serving = idx_a
             else:
                 # no preemption, enqueue the customer
                 self.queue_append(idx_a)
