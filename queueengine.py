@@ -416,6 +416,8 @@ class QUEUE(object):
                 # print(i, "-th update dequeue time: ",self.Customer['Dequeue_Time'][i])
                 self.Customer['Remain_Work_Load'][i] = 0
                 self.Customer['TSLS'][i] = 0
+                for j in self.queues:
+                    self.Customer['TSLS'][j] +=1
                 return self.depart(i)
             else:
                 # part of work is served
@@ -424,6 +426,8 @@ class QUEUE(object):
                 self.Customer['TSLS'][i] = 0
                 for j in self.queues:
                     self.Customer['TSLS'][j] +=1
+                self.queue_append(i)
+                self.i_serving = -1
                 return t_begin+1
         ### the following is for general case (i.e., the jobs are served one by one)
         if t_end == -1 or self.Customer['Remain_Work_Load'][i] <= t_end - t_begin:
@@ -438,7 +442,6 @@ class QUEUE(object):
             # part of work is served
             self.Customer['Serve_Intv'][i] += t_end - t_begin
             self.Customer['Remain_Work_Load'][i] -= t_end - t_begin
-
             return t_end
 
     def depart(self, i):
