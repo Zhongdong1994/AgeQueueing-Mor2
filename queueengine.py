@@ -14,7 +14,7 @@ from collections import deque
 import time
 
 
-class QUEUE(object):
+class QUEUE(object): 
     """docstring for QUEUE
     Queueing with priority users. The smaller value, the higher priority.
     Poisson arrival process: total arrival rate = arrival_rate; probability distribtion for different users = user_prob
