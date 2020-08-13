@@ -17,28 +17,14 @@ def simulate():
     '''
     run simulation for different arrival rates and plot curves
     '''
-    # arrival_rates = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
-    #arrival_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-    #arrival_rates = [0.7,0.8,0.9]
-    arrival_rates = [0.01,0.03,0.05,0.07,0.09,0.1,0.2,0.3,0.4,0.45,0.47,0.49]
-    #arrival_rates = [0.1,0.5,0.85]
-    #arrival_rates = [0.5]
-    Nuser =10000
+
+    #arrival_rates = [0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.87,0.9]   #zipf, mu=4
+    #arrival_rates = [0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.65,0.7,0.72]       #zipf, mu=3
+    arrival_rates = [0.07,0.08,0.09, 0.1,0.15, 0.2,0.25, 0.3, 0.35, 0.4, 0.41,0.42,0.43, 0.45, 0.46, 0.49] #geo, mu=0.5
+    Nuser =100000
     mu = 0.5
-    rounds = 5
-    #modes=['LCFS','RANDOM','SJF','SRPT','RANDOME','LCFSE','SJFE','PSJFE','SRPTE','ADM','ADS','ADF','ADFE','AoI2','AoI3','AoI2PE','AoI3PE']
-    # modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ABS','PADS','MPSJF', 'MSRPT','MPADS']  ###  FB is currently unavailable
-    # modes = ['PSJF', 'SRPT',  'PADS', 'MPSJF', 'MSRPT', 'MPADS','PSJFE','SRPTE', 'MPADS2','PADF','MPADF','MPADF2','ADM','PADM']
-    # modes = ['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','ADS','PADS','SRPTL','ADF','PADF']
-    # modes=['ADS','ADF','ADM','PADS','PADF','PADM','MPADS','MPADF','MPADM2']
-    # modes=['FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF','SRPT','SRPT3','MSRPT','SRPTE']
-    # modes = ['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'MPSJF', 'PSJFE', 'SRPT', 'SRPTA', 'MSRPT',
-    #          'SRPTE', 'ADS', 'PADS', 'MPADS', 'MPADS2', 'ADF',
-    #          'PADF', 'MPADF', 'MPADF2', 'ADM', 'PADM', 'MPADM', 'MPADM2']
-    #modes=['PLCFS','LCFSE','SJFE','PSJFE','SRPT','SRPTE','SRPTA','AoI2','AoI2P','AoI2R','AoI2RP','AoI3','AoI3P','AoI3R','AoI3RP']
-    #modes=['SJF','PSJF','SJFE','PSJFE','SRPT','SRPTE','ADF','PADF','ADS','PADS','ADM','PADM','AoI2','AoI2P','AoI3','AoI3P']
-    #modes = [ 'SJF','PSJFE','ADS','PADSE','SRPT', 'SRPTE', 'AoI2','AoI2PE']
-    #modes = ['FCFS']
+    rounds = 10
+
 
     modes = ['FCFS', 'RANDOM','LCFS', 'TSLS','PLCFS', 'SJF', 'PSJF', 'SRPT','ADM','ADS','ADF','PADM','PADS','PADF']
     #modes=['SRPT','LCFS','SJF','ADM','ADS','ADF','AoI2', 'AoI3']

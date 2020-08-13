@@ -43,24 +43,22 @@ class QUEUE(object):
         self.last_depart = -1  # by default no customer departs
         self.i_serving = -1  # by default no customer under serving
         # array to store all queueing related performance metric
-        self.Customer = np.zeros(self.Nuser, dtype=np.dtype([('Inqueue_Time', int),
-                                                             ('Arrival_Intv', int),  # arrival interval time
-                                                             ('Waiting_Intv', int),
-                                                             ('Serve_Intv', int),
-                                                             ('Work_Load', int),
-                                                             ('Remain_Work_Load', int),
-                                                             ('Dequeue_Intv', int),
-                                                             ('Dequeue_Time', int),
-                                                             ('TSLS', int), # time-since-last-service
+        self.Customer = np.zeros(self.Nuser, dtype=np.dtype([('Inqueue_Time', float),
+                                                             ('Arrival_Intv', float),  # arrival interval time
+                                                             ('Waiting_Intv', float),
+                                                             ('Serve_Intv', float),
+                                                             ('Work_Load', float),
+                                                             ('Remain_Work_Load', float),
+                                                             ('Dequeue_Intv', float),
+                                                             ('Dequeue_Time', float),
+                                                             ('TSLS', float), # time-since-last-service
                                                              ('Block_Tag', bool),
                                                              #     ('Block_Depth',int),
                                                              ('Queue_Number', int),
-                                                             ('Response_Time', int),
-                                                             ('Age_Arvl', int),
-                                                             ('Age_Dept', int),
-                                                             ('Age_Peak', int)]))
-        #     ('Age_Inef_Tag',bool),
-        #     ('Priority',int)]
+                                                             ('Response_Time', float),
+                                                             ('Age_Arvl', float),
+                                                             ('Age_Dept', float),
+                                                             ('Age_Peak', float)]))
 
         self.generate_arvl()
         # init queue for different priorities
@@ -80,24 +78,22 @@ class QUEUE(object):
         self.last_depart = -1  # by default no customer departs
         self.i_serving = -1  # by default no customer under serving
         self.largest_inqueue_time = 0
-        Customer = np.zeros(self.Nuser, dtype=np.dtype([('Inqueue_Time', int),
-                                                        ('Arrival_Intv', int),
-                                                        ('Waiting_Intv', int),
-                                                        ('Serve_Intv', int),
-                                                        ('Work_Load', int),
-                                                        ('Remain_Work_Load', int),  ### index=5
-                                                        ('Dequeue_Intv', int),
-                                                        ('Dequeue_Time', int),
-                                                        ('TSLS', int),  # time-since-last-service
+        Customer = np.zeros(self.Nuser, dtype=np.dtype([('Inqueue_Time', float),
+                                                        ('Arrival_Intv', float),
+                                                        ('Waiting_Intv', float),
+                                                        ('Serve_Intv', float),
+                                                        ('Work_Load', float),
+                                                        ('Remain_Work_Load', float),  ### index=5
+                                                        ('Dequeue_Intv', float),
+                                                        ('Dequeue_Time', float),
+                                                        ('TSLS', float),  # time-since-last-service
                                                         ('Block_Tag', bool),
                                                         #    ('Block_Depth',int),
                                                         ('Queue_Number', int),
-                                                        ('Response_Time', int),
-                                                        ('Age_Arvl', int),
-                                                        ('Age_Dept', int),
-                                                        ('Age_Peak', int)]))
-        #   ('Age_Inef_Tag',bool),
-        #   ('Priority',int)
+                                                        ('Response_Time', float),
+                                                        ('Age_Arvl', float),
+                                                        ('Age_Dept', float),
+                                                        ('Age_Peak', float)]))
         Customer['Arrival_Intv'] = np.copy(self.Customer['Arrival_Intv'])
         # Customer['Priority'] = np.copy(self.Customer['Priority'])
         Customer['Work_Load'] = np.copy(self.Customer['Work_Load'])
@@ -116,7 +112,7 @@ class QUEUE(object):
         return arrival intervals with arrival_rate and index each customer's priority
         '''
 
-        #self.Customer['Arrival_Intv'] = np.random.exponential(1 / self.arrival_rate, size=self.Nuser)
+
         self.Customer['Arrival_Intv'] = np.random.geometric(self.arrival_rate, size=self.Nuser)
         #self.Customer['Arrival_Intv']=[3, 2, 5, 1, 2, 1, 1, 1, 1, 1]
         #print(self.Customer['Arrival_Intv'])
@@ -124,8 +120,9 @@ class QUEUE(object):
         # print(self.Customer['Priority'])
 
 
-        #self.Customer['Work_Load'] = np.random.exponential(1 / self.mu, size=self.Nuser)
-        self.Customer['Work_Load']= np.random.geometric(self.mu, size=self.Nuser)
+
+        #self.Customer['Work_Load']= np.random.geometric(self.mu, size=self.Nuser)
+        self.Customer['Work_Load'] = np.random.zipf(self.mu, size=self.Nuser)
         #self.Customer['Work_Load']=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         #print(self.Customer['Work_Load'])
         #self.Customer['Work_Load'] = 0.29752*np.random.weibull(0.39837, size=self.Nuser)  #  mean=1, csqr=10
@@ -562,12 +559,6 @@ class QUEUE(object):
 
         while idx_a < self.Nuser - 1:
             idx_a += 1
-
-
-            # if self.mode=='FB':  working on...
-            #     self.conqueue=[]
-            #     self.conqueue.append(idx_a-1)
-
             self.serve_between_time(self.Customer['Inqueue_Time'][idx_a - 1],
                                     self.Customer['Inqueue_Time'][idx_a - 1] + self.Customer['Arrival_Intv'][idx_a])
             self.arrive(idx_a)
