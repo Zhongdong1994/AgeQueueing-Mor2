@@ -26,7 +26,7 @@ def simulate():
     expn = [2.0116,2.1836,2.2665,2.3144,2.3452,2.3666,2.3823,2.3942,2.4035]; # Exponent
     Csquare = [1,1.5,2,2.5,3,3.5,4,4.5,5]
     mu = 0.5
-    rounds = 10
+    rounds = 20
 
 
     modes = ['FCFS', 'RANDOM','LCFS', 'TSLS','PLCFS', 'SJF', 'PSJF', 'SRPT','ADM','ADS','ADF','PADM','PADS','PADF']
@@ -62,7 +62,7 @@ def simulate():
             Mean2 = Mean2.append(Mean)
 
         for j in range(rounds - 1):
-            print("rounds:", j)
+            print("rounds:", j+1)
             temp = compare(Nuser, arrival_rates[0], mu, modes,N[i],expn[i],j+2)
             tempMean = pd.DataFrame(data)
             tempMean['age'] = arrival_rates[0]
