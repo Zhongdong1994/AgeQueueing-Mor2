@@ -14,14 +14,14 @@ from collections import deque
 import time
 
 
-class QUEUE(object): 
+class QUEUE(object):
     """docstring for QUEUE
     Queueing with priority users. The smaller value, the higher priority.
     Poisson arrival process: total arrival rate = arrival_rate; probability distribtion for different users = user_prob
     Deterministic service process: service rates for different users = mu
     """
 
-    def __init__(self, Nuser=10000, arrival_rate=0.6, mu=1, mode='FCFS'):
+    def __init__(self, Nuser=10000, arrival_rate=0.6, mu=1, mode='FCFS',popIndx=10, expIndex=2,roundIndx=1):
         '''
         'Age_Inef_Tag': False for effective age decreasing; True for non-effective age decreasing
         'Block_tag': True if the packet is blocked
@@ -60,7 +60,7 @@ class QUEUE(object):
                                                              ('Age_Dept', float),
                                                              ('Age_Peak', float)]))
 
-        self.generate_arvl()
+        self.generate_arvl(popIndx,expIndex,roundIndx)
         # init queue for different priorities
         self.queues = []
         # suspended queue for preempted packets
@@ -107,7 +107,7 @@ class QUEUE(object):
         self.conqueue = []
         self.effe_departure = []
 
-    def generate_arvl(self):
+    def generate_arvl(self,popIndx=10, expIndex=2,roundIndx=1):
         '''
         return arrival intervals with arrival_rate and index each customer's priority
         '''
@@ -122,7 +122,9 @@ class QUEUE(object):
 
 
         #self.Customer['Work_Load']= np.random.geometric(self.mu, size=self.Nuser)
-        self.Customer['Work_Load'] = np.random.zipf(self.mu, size=self.Nuser)
+        loadpath='data/N='+str(popIndx)+'_s='+str(expIndex)+'_round='+str(roundIndx)+'.txt'
+        loadtemp=np.loadtxt(loadpath)
+        self.Customer['Work_Load'] = loadtemp
         #self.Customer['Work_Load']=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         #print(self.Customer['Work_Load'])
         #self.Customer['Work_Load'] = 0.29752*np.random.weibull(0.39837, size=self.Nuser)  #  mean=1, csqr=10

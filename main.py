@@ -20,8 +20,11 @@ def simulate():
 
     #arrival_rates = [0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.87,0.9]   #zipf, mu=4
     #arrival_rates = [0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.65,0.7,0.72]       #zipf, mu=3
-    arrival_rates = [0.07,0.08,0.09, 0.1,0.15, 0.2,0.25, 0.3, 0.35, 0.4, 0.41,0.42,0.43, 0.45, 0.46, 0.49] #geo, mu=0.5
-    Nuser =10000
+    arrival_rates = [0.4] #zipf
+    Nuser =100000  # fixed
+    N = [13,22,34,48,65,84,106,130,157]; # Number of  Elements
+    expn = [2.0116,2.1836,2.2665,2.3144,2.3452,2.3666,2.3823,2.3942,2.4035]; # Exponent
+    Csquare = [1,1.5,2,2.5,3,3.5,4,4.5,5]
     mu = 0.5
     rounds = 10
 
@@ -47,22 +50,22 @@ def simulate():
                                        ('peak', float),
                                        ('len', float),
                                        ('response', float)]))
-    for i in range(len(arrival_rates)):
-        print(arrival_rates[i])
-        Mean = compare(Nuser, arrival_rates[i], mu, modes)
+    for i in range(len(Csquare)):
+        print(Csquare[i])
+        Mean = compare(Nuser, arrival_rates[0], mu, modes,N[i],expn[i],1)
         if i == 0:
             Mean2 = Mean  ### Mean2 is to store all data (the data generated in all loops)
         else:
             tempMean = pd.DataFrame(data)
-            tempMean['age'] = arrival_rates[i]
+            tempMean['age'] = arrival_rates[0]
             Mean2 = Mean2.append(tempMean)
             Mean2 = Mean2.append(Mean)
 
         for j in range(rounds - 1):
-            #print("rounds ID:", j)
-            temp = compare(Nuser, arrival_rates[i], mu, modes)
+            print("rounds:", j)
+            temp = compare(Nuser, arrival_rates[0], mu, modes,N[i],expn[i],j+2)
             tempMean = pd.DataFrame(data)
-            tempMean['age'] = arrival_rates[i]
+            tempMean['age'] = arrival_rates[0]
             tempMean['peak'] = j + 1
             Mean2 = Mean2.append(tempMean)
             Mean2 = Mean2.append(temp)
@@ -73,13 +76,13 @@ def simulate():
             Mean1 = Mean  ### Mean1 is to store all averagered data (is exactly same as the output)
         else:
             tempMean = pd.DataFrame(data)
-            tempMean['age'] = arrival_rates[i]
+            tempMean['age'] = arrival_rates[0]
             Mean1 = Mean1.append(tempMean)
             Mean1 = Mean1.append(Mean)
         print(Mean)
         # store simulation data in results.h5
         with pd.HDFStore('results.h5') as store:
-            store.put(str(arrival_rates[i]), Mean)
+            store.put(str(arrival_rates[0]), Mean)
 
     Mean1.to_csv("Averagedata.csv")
     Mean2.to_csv("Originaldata.csv")
@@ -88,47 +91,46 @@ def simulate():
     import matplotlib.pyplot as plt
 
     # mean response
-    fig, ax = plt.subplots(figsize=(15, 8))
-    with pd.HDFStore('results.h5') as store:
-        for m in range(len(modes)):
-            plt.plot(arrival_rates,
-                     [store[str(arrival_rates[i])]['response'][modes[m]] for i in range(len(arrival_rates))])
-
-        plt.ylabel('average response')
-        plt.xlabel('arrival rates')
-        plt.legend(modes)
-        ax.set_ylim(
-            [0, 9])
-        plt.show()
-
-    # mean age
-    fig, ax = plt.subplots(figsize=(15, 8))
-    with pd.HDFStore('results.h5') as store:
-        # plt.plot(arrival_rates, [store[str(arrival_rates[i])]['age'][modes[5]] for i in range(len(arrival_rates))])
-        for m in range(len(modes)):
-            plt.plot(arrival_rates, [store[str(arrival_rates[i])]['age'][modes[m]] for i in range(len(arrival_rates))])
-
-        plt.ylabel('average age')
-        plt.xlabel('arrival rates')
-        plt.legend(modes)
-        #ax.set_ylim([0, max([store[str(arrival_rates[i])]['age'][modes[1]] for i in range(len(arrival_rates))]) * 1.1])
-        plt.show()
-    # peak age
-    fig, ax = plt.subplots(figsize=(15, 8))
-    with pd.HDFStore('results.h5') as store:
-        # plt.plot(arrival_rates, [store[str(arrival_rates[i])]['peak'][modes[5]] for i in range(len(arrival_rates))])
-        for m in range(len(modes)):
-            plt.plot(arrival_rates, [store[str(arrival_rates[i])]['peak'][modes[m]] for i in range(len(arrival_rates))])
-
-        plt.ylabel('average peak age')
-        plt.xlabel('arrival rates')
-        plt.legend(modes)
-        #ax.set_ylim([0, max([store[str(arrival_rates[i])]['peak'][modes[1]] for i in range(len(arrival_rates))]) * 1.1])
-        plt.show()
+    # fig, ax = plt.subplots(figsize=(15, 8))
+    # with pd.HDFStore('results.h5') as store:
+    #     for m in range(len(modes)):
+    #         plt.plot(arrival_rates,
+    #                  [store[str(arrival_rates[i])]['response'][modes[m]] for i in range(len(arrival_rates))])
+    #     plt.ylabel('average response')
+    #     plt.xlabel('arrival rates')
+    #     plt.legend(modes)
+    #     ax.set_ylim(
+    #         [0, 9])
+    #     plt.show()
+    #
+    # # mean age
+    # fig, ax = plt.subplots(figsize=(15, 8))
+    # with pd.HDFStore('results.h5') as store:
+    #     # plt.plot(arrival_rates, [store[str(arrival_rates[i])]['age'][modes[5]] for i in range(len(arrival_rates))])
+    #     for m in range(len(modes)):
+    #         plt.plot(arrival_rates, [store[str(arrival_rates[i])]['age'][modes[m]] for i in range(len(arrival_rates))])
+    #
+    #     plt.ylabel('average age')
+    #     plt.xlabel('arrival rates')
+    #     plt.legend(modes)
+    #     #ax.set_ylim([0, max([store[str(arrival_rates[i])]['age'][modes[1]] for i in range(len(arrival_rates))]) * 1.1])
+    #     plt.show()
+    # # peak age
+    # fig, ax = plt.subplots(figsize=(15, 8))
+    # with pd.HDFStore('results.h5') as store:
+    #     # plt.plot(arrival_rates, [store[str(arrival_rates[i])]['peak'][modes[5]] for i in range(len(arrival_rates))])
+    #     for m in range(len(modes)):
+    #         plt.plot(arrival_rates, [store[str(arrival_rates[i])]['peak'][modes[m]] for i in range(len(arrival_rates))])
+    #
+    #     plt.ylabel('average peak age')
+    #     plt.xlabel('arrival rates')
+    #     plt.legend(modes)
+    #     #ax.set_ylim([0, max([store[str(arrival_rates[i])]['peak'][modes[1]] for i in range(len(arrival_rates))]) * 1.1])
+    #     plt.show()
 
 
 def compare(Nuser=1000, arrival_rate=0.35, mu=1,
-            modes=['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT', 'ADS', 'PADS']):
+            modes=['FCFS', 'RANDOM', 'LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT', 'ADS', 'PADS'],popIndx=10, expIndex=2,roundIndx=1):
     '''
     compare different scheduling modes
     '''
@@ -141,12 +143,13 @@ def compare(Nuser=1000, arrival_rate=0.35, mu=1,
     Mean = pd.DataFrame(data, index=modes)
     # print(Mean)
 
-    queue = QUEUE(Nuser, arrival_rate, mu)
+    queue = QUEUE(Nuser, arrival_rate, mu,'FCFS',popIndx,expIndex,roundIndx)
 
     # print(queue.parameters)
     # print(arrival_rate)
     for i in range(len(modes)):
         queue.change_mode(modes[i])
+        print("complete mode "+modes[i])
         queue.queueing()
         Mean['age'][queue.mode] = queue.mean_age()
         Mean['peak'][queue.mode] = queue.mean_peak_age()
