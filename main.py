@@ -20,16 +20,18 @@ def simulate():
 
     #arrival_rates = [0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.85,0.87,0.9]   #zipf, mu=4
     #arrival_rates = [0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.65,0.7,0.72]       #zipf, mu=3
-    arrival_rates = [0.4] #zipf
-    Nuser =100000  # fixed
+    arrival_rates = [0.1] #zipf
+    Nuser =pow(10,5)  # fixed
     N = [13,22,34,48,65,84,106,130,157]; # Number of  Elements
     expn = [2.0116,2.1836,2.2665,2.3144,2.3452,2.3666,2.3823,2.3942,2.4035]; # Exponent
     Csquare = [1,1.5,2,2.5,3,3.5,4,4.5,5]
     mu = 0.5
-    rounds = 20
+    rounds = 1
 
 
-    modes = ['FCFS', 'RANDOM','LCFS', 'TSLS','PLCFS', 'SJF', 'PSJF', 'SRPT','ADM','ADS','ADF','PADM','PADS','PADF']
+    #modes = ['FCFS', 'RANDOM','LCFS', 'TSLS','PLCFS', 'SJF', 'PSJF', 'SRPT','ADM','ADS','ADF','PADM','PADS','PADF']
+    #modes = ['RANDOM','LCFS','SJF','SJF2']
+    modes = ['RANDOM','LCFS','SJF']
     #modes=['SRPT','LCFS','SJF','ADM','ADS','ADF','AoI2', 'AoI3']
 
     #modes = [ 'FCFS', 'RANDOM','LCFS', 'PS', 'PLCFS', 'SJF', 'PSJF', 'SRPT','RANDOME', 'LCFSE', 'SJFE', 'PSJFE', 'SRPTE','SRPTA']
@@ -82,7 +84,7 @@ def simulate():
         print(Mean)
         # store simulation data in results.h5
         with pd.HDFStore('results.h5') as store:
-            store.put(str(arrival_rates[0]), Mean)
+            store.put(str(Csquare[i]), Mean)
 
     Mean1.to_csv("Averagedata.csv")
     Mean2.to_csv("Originaldata.csv")
@@ -152,7 +154,7 @@ def compare(Nuser=1000, arrival_rate=0.35, mu=1,
         print("complete mode "+modes[i])
         queue.queueing()
         Mean['age'][queue.mode] = queue.mean_age()
-        Mean['peak'][queue.mode] = queue.mean_peak_age()
+        Mean['peak'][queue.mode] = queue.mean_peak_age(popIndx, expIndex,roundIndx)
         Mean['len'][queue.mode] = queue.mean_queue_len()
         Mean['response'][queue.mode] = queue.mean_response_time()
         # Mean['ineff_dept'][queue.mode] = sum(queue.Customer['Age_Inef_Tag'] == True)/queue.Nuser

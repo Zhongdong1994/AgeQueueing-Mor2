@@ -177,7 +177,14 @@ class QUEUE(object):
                 minimum = x
         return minimum
 
-    def rs(self, temp=1):  ### return the index of a job  which has the  minimum remaining work load in the queue, FCFS if two jobs have the same minimum remaining work load
+    def sjf2(self, temp=1):  ### return the index of minimum original work load in the queue
+        minimum = temp-1
+        for x in range(temp-1,-1,-1):
+            if self.Customer['Work_Load'][self.queues[x]] <= self.Customer['Work_Load'][self.queues[minimum]]:
+                minimum = x
+        return minimum
+
+    def rs(self, temp=1):  ### return the index of a job  which has the  minimum remaining work load in the queue, LCFS if two jobs have the same minimum remaining work load
         minimum = 0
         for x in range(temp):
             if self.Customer['Remain_Work_Load'][self.queues[x]] <= self.Customer['Remain_Work_Load'][
@@ -279,6 +286,9 @@ class QUEUE(object):
         #     return returnvalue
         if self.mode == 'SJF' or self.mode == 'PSJF' or self.mode == 'MPSJF':
             return  self.queues.pop(self.os(len(self.queues)))
+
+        if self.mode == 'SJF2':
+            return  self.queues.pop(self.sjf2(len(self.queues)))
         # if self.mode=='SJFE':  # comment out at 8.5.2020, since informative version is not used yet
         #     returnvalue = self.queues.pop(self.os(len(self.queues)))
         #     self.queues=list(filter(lambda x: x>returnvalue,self.queues))
@@ -358,7 +368,7 @@ class QUEUE(object):
         '''
         if self.mode in ['FCFS', 'RANDOM','RANDOME', 'LCFS','LCFSE', 'PS', 'PLCFS', 'SJF', 'SJFE','PSJF', 'SRPT','ADS','PADS','MPSJF', 'MSRPT','MPADS','PSJFE','SRPTE','MPADS2',
                          'SRPTL','SRPTA','ADF','PADF','MPADF','MPADF2','ADM','PADM','MPADM','MPADM2','AoI2PE','AoI2E','AoI3E','AoI3PE','AoI2RP','AoI2R','AoI3R','AoI3RP','ADFE',
-                         'PADFE','AoI2','AoI3','PADSE','TSLS']:
+                         'PADFE','AoI2','AoI3','PADSE','TSLS','SJF2']:
             self.queues.append(i)
         else:
             print('Improper queueing mode in queue_append!', self.mode)
@@ -604,7 +614,7 @@ class QUEUE(object):
             #print("total age of",x,"-th effecitve update",total_age)
         return total_age / self.Customer['Dequeue_Time'][self.Nuser - 1]
 
-    def mean_peak_age(self):
+    def mean_peak_age(self,popIndx=10, expIndex=2,roundIndx=1):
         '''
         the average peak age
         return: mean peak_age
@@ -612,6 +622,8 @@ class QUEUE(object):
         total_page = 0
         for x in self.effe_queues:
             total_page += self.Customer['Age_Peak'][x]
+        savepath = 'paoi/mode=' + self.mode + '_N='+str(popIndx) + '_s=' + str(expIndex) + '_round=' + str(roundIndx) + '.txt'
+        np.savetxt(savepath,self.Customer['Age_Peak'],delimiter=" ")
         return total_page / len(self.effe_queues)
 
     def mean_response_time(self):
